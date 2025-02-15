@@ -1,0 +1,56 @@
+\documentclass[sigconf, review, anonymous]{acmart}
+
+\begin{document}
+
+\begin{CCSXML}
+	<ccs2012>
+	<concept>
+	<concept_id>10010583.10010682.10010690.10010691</concept_id>
+	<concept_desc>Hardware~Combinational synthesis</concept_desc>
+	<concept_significance>500</concept_significance>
+	</concept>
+	<concept>
+	<concept_id>10002950.10003624.10003625.10003628</concept_id>
+	<concept_desc>Mathematics of computing~Combinatorial algorithms</concept_desc>
+	<concept_significance>300</concept_significance>
+	</concept>
+	</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Hardware~Combinational synthesis}
+\ccsdesc[300]{Mathematics of computing~Combinatorial algorithms}
+
+\keywords{multiplier, multiplication, summation, Boolean, circuit, synthesis, combinational}
+  
+\title{Smaller Circuits for Summation and Multiplication}
+
+
+\begin{abstract}
+	The Full Adder and Half Adder are used frequently when synthesizing Boolean circuits.
+	For example, one can compute the binary representation of~the sum of~$n$~inputs bits
+	using at~most~$n$ Full and Half Adders. Also, a~circuit computing the sum of~two $n$-bit
+	numbers can be~composed out of~one Half Adder and $(n-1)$ Full Adders. Finally, 
+	to~compute the product of~two $n$-bit numbers, one first computes $n^2$ partial products
+	and then adds them using about $n^2$ Full and Half Adders. Two natural strategies for 
+	adding the partial products were presented by~Wallace and Dadda.
+	
+	In~this paper, we~study the size of~circuits composed out of~Full and Half Adders, 
+	over the full binary basis. Interestingly, many such circuits are suboptimal:
+	for example, already the sum of~five input bits can be~computed more efficiently
+	than by~using two Full Adders and a~single Half Adder. We~show that, in~many interesting
+	regimes, circuits composed out of~Full and Half Adders, can be~made about 10\% smaller.
+	This applies to~Wallace and Dadda multipliers.
+	We~provide open source implementation of~generators producing efficient
+	circuits for summation and multiplication.
+\end{abstract}
+
+
+\maketitle
+
+\section{Overview}
+The Full Adder and Half Adder 
+(abbreviated~as FA and HA and also known~as 3:2 and 2:2 compressors, respectively)
+are used frequently when synthesizing Boolean circuits. 
+
+\end{document}
+
