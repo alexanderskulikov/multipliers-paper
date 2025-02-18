@@ -1,5 +1,12 @@
 \documentclass[sigconf, review, anonymous]{acmart}
 
+\usepackage{tikz}
+\usetikzlibrary{math}
+
+\DeclareMathOperator{\SUM}{SUM}
+\DeclareMathOperator{\ADD}{ADD}
+\DeclareMathOperator{\MULT}{MULT}
+
 \begin{document}
 
 \begin{CCSXML}
@@ -21,20 +28,22 @@
 \ccsdesc[300]{Mathematics of computing~Combinatorial algorithms}
 
 \keywords{multiplier, multiplication, summation, Boolean, circuit, synthesis, combinational}
-  
+
 \title{Smaller Circuits for Summation and Multiplication}
+
+
 
 
 \begin{abstract}
 	The Full Adder and Half Adder are used frequently when synthesizing Boolean circuits.
 	For example, one can compute the binary representation of~the sum of~$n$~inputs bits
 	using at~most~$n$ Full and Half Adders. Also, a~circuit computing the sum of~two $n$-bit
-	numbers can be~composed out of~one Half Adder and $(n-1)$ Full Adders. Finally, 
+	numbers can be~composed out of~one Half Adder and $(n-1)$ Full Adders. Finally,
 	to~compute the product of~two $n$-bit numbers, one first computes $n^2$ partial products
-	and then adds them using about $n^2$ Full and Half Adders. Two natural strategies for 
+	and then adds them using about $n^2$ Full and Half Adders. Two natural strategies for
 	adding the partial products were presented by~Wallace and Dadda.
-	
-	In~this paper, we~study the size of~circuits composed out of~Full and Half Adders, 
+
+	In~this paper, we~study the size of~circuits composed out of~Full and Half Adders,
 	over the full binary basis. Interestingly, many such circuits are suboptimal:
 	for example, already the sum of~five input bits can be~computed more efficiently
 	than by~using two Full Adders and a~single Half Adder. We~show that, in~many interesting
@@ -48,9 +57,110 @@
 \maketitle
 
 \section{Overview}
-The Full Adder and Half Adder 
+The Full Adder and Half Adder
 (abbreviated~as FA and HA and also known~as 3:2 and 2:2 compressors, respectively)
-are used frequently when synthesizing Boolean circuits. 
+are used frequently when synthesizing Boolean circuits. They compute $\SUM_3$
+and $\SUM_2$, respectively, where the function
+\[\SUM_n \colon \{0,1\}^n \to \{0,1\}^l\]
+gives the binary representation of~the sum of~$n$~input bits:
+\[\SUM_n(x_1, \dotsc, x_n)=(s_0, \dotsc, s_{l-1}) \text{ such that } \sum_{i=1}^{n}x_i=\sum_{i=0}^{l-1}2^is_i,\]
+where $l=\lceil \log_2(n+1) \rceil$.
+
+
+\begin{center}
+    \begin{tikzpicture}
+        %\draw[help lines] (0, -2) grid (8, 1);
+        \tikzstyle{dot}=[circle, fill=black, inner sep=0mm, minimum size=1mm]
+        \tikzstyle{l}=[dotted, gray, thin]
+
+        \tikzmath{\d=0.4;}
+
+        \begin{scope}
+            \foreach \y in {-2, ..., 2}
+                \node[dot] at (0, \y * \d) {};
+            \node at (0, -2) {$\SUM_5$};
+
+            \foreach \x [count=\n from 0] in {0} {
+                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+                \node[gray, below] at (\x * \d, -1) {$\n$};
+            }
+        \end{scope}
+
+        \begin{scope}[xshift=20mm]
+            \foreach \x in {-2, ..., 2} {
+                \node[dot] at (\x * \d, \d / 2) {};
+                \node[dot] at (\x * \d, - \d / 2) {};
+            }
+            \node at (0, -2) {$\ADD_5$};
+
+            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
+                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+                \node[gray, below] at (\x * \d, -1) {$\n$};
+            }
+        \end{scope}
+
+        \begin{scope}[xshift=55mm]
+            \foreach \y in {-2, ..., 2}
+                \foreach \x in {-2, ..., 2} {
+                    \node[dot] at (\x * \d + \y * \d, \y * \d) {};
+            }
+            \node at (0, -2) {$\MULT_5$};
+
+            \foreach \x [count=\n from 0] in {4, 3, ..., -4} {
+                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+                \node[gray, below] at (\x * \d, -1) {$\n$};
+            }
+        \end{scope}
+    \end{tikzpicture}
+\end{center}
+
+
+\begin{center}
+    \begin{tikzpicture}
+        %\draw[help lines] (0, -2) grid (8, 1);
+        \tikzstyle{dot}=[circle, fill=black, inner sep=0mm, minimum size=1mm]
+        \tikzstyle{l}=[dotted, gray, thin]
+
+        \tikzmath{\d=0.4;}
+
+        \begin{scope}
+            \foreach \x in {-2, ..., 2}
+                \node[dot] at (\x * \d, - \d / 2) {};
+            \node[dot] at (2 * \d, \d / 2) {};
+
+            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
+                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+                \node[gray, below] at (\x * \d, -1) {$\n$};
+            }
+        \end{scope}
+
+
+        \begin{scope}[xshift=30mm]
+            \foreach \x in {-2, ..., 2} {
+                \node[dot] at (\x * \d, \d) {};
+                \node[dot] at (\x * \d, 0) {};
+                \node[dot] at (\x * \d, -\d) {};
+            }
+
+            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
+                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+                \node[gray, below] at (\x * \d, -1) {$\n$};
+            }
+        \end{scope}
+
+        \begin{scope}[xshift=60mm]
+            \foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 1/-1, 1/0, 2/-1}
+                \node[dot] at (\x * \d, \y * \d) {};
+
+            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
+                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+                \node[gray, below] at (\x * \d, -1) {$\n$};
+            }
+        \end{scope}
+    \end{tikzpicture}
+\end{center}
+
+
 
 \end{document}
 
