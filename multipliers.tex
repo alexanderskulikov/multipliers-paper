@@ -3,9 +3,19 @@
 \usepackage{tikz}
 \usetikzlibrary{math}
 
+\tikzstyle{dot}=[circle, fill=black, inner sep=0mm, minimum size=1mm]
+\tikzstyle{l}=[dotted, gray, thin]
+\tikzstyle{input}=[draw=none, inner sep=.2mm]
+\tikzstyle{gate}=[draw, circle, inner sep=.2mm, minimum size=4mm]
+%\tikzstyle{l}=[draw=none, rectangle, fill=white, inner sep=.4mm]
+\tikzmath{\d=0.4;}
+
+\usepackage[textwidth=15mm]{todonotes}
+
 \DeclareMathOperator{\SUM}{SUM}
 \DeclareMathOperator{\ADD}{ADD}
 \DeclareMathOperator{\MULT}{MULT}
+\DeclareMathOperator{\BA}{BA}
 
 \begin{document}
 
@@ -50,117 +60,275 @@
 	regimes, circuits composed out of~Full and Half Adders, can be~made about 10\% smaller.
 	This applies to~Wallace and Dadda multipliers.
 	We~provide open source implementation of~generators producing efficient
-	circuits for summation and multiplication.
+	circuits for summation and multiplication.\todo{I will update the abstract later}
 \end{abstract}
 
 
 \maketitle
 
 \section{Overview}
-The Full Adder and Half Adder
-(abbreviated~as FA and HA and also known~as 3:2 and 2:2 compressors, respectively)
-are used frequently when synthesizing Boolean circuits. They compute $\SUM_3$
-and $\SUM_2$, respectively, where the function
-\[\SUM_n \colon \{0,1\}^n \to \{0,1\}^l\]
-gives the binary representation of~the sum of~$n$~input bits:
-\[\SUM_n(x_1, \dotsc, x_n)=(s_0, \dotsc, s_{l-1}) \text{ such that } \sum_{i=1}^{n}x_i=\sum_{i=0}^{l-1}2^is_i,\]
-where $l=\lceil \log_2(n+1) \rceil$.
+%The Full Adder and Half Adder
+%(abbreviated~as FA and HA and also known~as 3:2 and 2:2 compressors, respectively)
+%are used frequently when synthesizing Boolean circuits. They compute $\SUM_3$
+%and $\SUM_2$, respectively, where the function
+%\[\SUM_n \colon \{0,1\}^n \to \{0,1\}^l\]
+%gives the binary representation of~the sum of~$n$~input bits:
+%\[\SUM_n(x_1, \dotsc, x_n)=(s_0, \dotsc, s_{l-1}) \text{ such that } \sum_{i=1}^{n}x_i=\sum_{i=0}^{l-1}2^is_i,\]
+%where $l=\lceil \log_2(n+1) \rceil$.
+
+Bit addition is~one of~the most frequently used operations
+in~Boolean circuit synthesis. It~arises, for example, in~the
+following scenarios.
+\begin{itemize}
+	\item Adding two $n$-bit numbers.
+	\item Computing a~symmetric Boolean function 
+		(such as~majority or~sorting).
+		A~natural way of~doing this is~to~first compute
+		the binary representation of~the sum of~$n$~input bits
+		(that~is, to~compress $n$~bits into about $\log_2 n$ bits)
+		and then to~compute the function at~hand
+		out of~the computed binary representation.
+	\item To~multiply two $n$-bit numbers, one may first compute
+		all partial products and then sum~up the resulting bits.
+\end{itemize}
+In~terms of~the dot-notation introduced by~Dadda~\cite{dadda}, the three scenarios discussed above are visualized as~shown in~Figure~\ref{figure:dot1}.
+
+\begin{figure}[!ht]
+	\begin{center}
+	    \begin{tikzpicture}
+	        %\draw[help lines] (0, -2) grid (8, 1);
+	
+	        \begin{scope}[xshift=25mm]
+	            \foreach \y in {-2, ..., 2}
+	                \node[dot] at (0, \y * \d) {};
+	            \node at (0, -2) {$\SUM_5$};
+	
+	            \foreach \x [count=\n from 0] in {0} {
+	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+	                \node[gray, below] at (\x * \d, -1) {$\n$};
+	            }
+	        \end{scope}
+	
+	        \begin{scope}[xshift=0mm]
+	            \foreach \x in {-2, ..., 2} {
+	                \node[dot] at (\x * \d, \d / 2) {};
+	                \node[dot] at (\x * \d, - \d / 2) {};
+	            }
+	            \node at (0, -2) {$\ADD_5$};
+	
+	            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
+	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+	                \node[gray, below] at (\x * \d, -1) {$\n$};
+	            }
+	        \end{scope}
+	
+	        \begin{scope}[xshift=55mm]
+	            \foreach \y in {-2, ..., 2}
+	                \foreach \x in {-2, ..., 2} {
+	                    \node[dot] at (\x * \d + \y * \d, \y * \d) {};
+	            }
+	            \node at (0, -2) {$\MULT_5$};
+	
+	            \foreach \x [count=\n from 0] in {4, 3, ..., -4} {
+	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+	                \node[gray, below] at (\x * \d, -1) {$\n$};
+	            }
+	        \end{scope}
+	    \end{tikzpicture}
+	\end{center}
+	\caption{Dot diagrams for three Boolean functions: $\ADD_5$ adds two five-bit numbers, $\SUM_5$ adds five bits, and $\MULT_5$ adds five five-bit numbers.}
+	\label{figure:dot1}
+\end{figure}
+
+There are many other cases where one needs to~add bits.
+Say, one may want to~add a~single bit to an~$n$-bit number, 
+or~to~add three $n$-bit numbers, or~add a~few bits of~varying significance,
+see Figure~\ref{figure:dot2}.
+
+\begin{figure}[!ht]
+	\begin{center}
+	    \begin{tikzpicture}
+	        \begin{scope}
+	            \foreach \x in {-2, ..., 2}
+	                \node[dot] at (\x * \d, - \d / 2) {};
+	            \node[dot] at (2 * \d, \d / 2) {};
+	
+	            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
+	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+	                \node[gray, below] at (\x * \d, -1) {$\n$};
+	            }
+	        \end{scope}
+	
+	
+	        \begin{scope}[xshift=30mm]
+	            \foreach \x in {-2, ..., 2} {
+	                \node[dot] at (\x * \d, \d) {};
+	                \node[dot] at (\x * \d, 0) {};
+	                \node[dot] at (\x * \d, -\d) {};
+	            }
+	
+	            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
+	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+	                \node[gray, below] at (\x * \d, -1) {$\n$};
+	            }
+	        \end{scope}
+	
+	        \begin{scope}[xshift=60mm]
+	            \foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 1/-1, 1/0, 2/-1}
+	                \node[dot] at (\x * \d, \y * \d) {};
+	
+	            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
+	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+	                \node[gray, below] at (\x * \d, -1) {$\n$};
+	            }
+	        \end{scope}
+	    \end{tikzpicture}
+	\end{center}
+	\caption{More scenarios of~adding bits of~varying significance.}
+	\label{figure:dot2}
+\end{figure}
+
+A~function capturing all such scenarios is~known as~\emph{bit adder}
+$\BA_{k_0, k_1, \dotsc, k_r}$. It~takes $k_0+k_1+\dotsb+k_r$ input bits:
+$k_0$~bits of~significance~$0$, $k_1$~bits of~significance~$1$, and so~on.
+It~outputs~$m$ bits of~significance $0,\dotsc,m-1$ where $m$~is
+minimal such that $\sum_{i=0}^{r}k_i2^i \le 2^m-1$. This way, $\SUM_n=\BA_{0,0,\dotsc,0}$ and $\ADD_n=\BA_{0,0,1,1,\dotsc,n-1,n-1}$.
+
+Since bit addition is~such a~basic task in~Boolean circuit synthesis,
+a~lot of~research has been done on~constructing efficient circuits 
+for various special cases of~it, see~\cite{DBLP:journals/cc/PatersonZ93}
+and references therein.\todo{add more references}
+A~vast majority of~these results is~devoted to~optimizing the circuit \emph{depth} (also known as~delay).
+In~this paper, we~investigate the circuit \emph{size} (also known as~area) of~bit addition. Specifically, we~study circuits over the full binary basis.
+
+Two basic building blocks for adding bits are known as~Half Adder~(HA)
+and Full Adder~(FA). They compute the binary representation of~the sum
+of~two and three bits, respectively (that~is, $\SUM_2$ and $\SUM_3$).
+In~the full binary basis, they can be~implemented in~two and five gates, respectively, see Figure~\ref{figure:sum23}.
+
+\begin{figure}[!ht]
+	\begin{center}
+		\begin{tikzpicture}[label distance=-.9mm, scale=.8]
+			\foreach \n/\x/\y in {1/0/1, 2/1/1}
+				\node[input] (x\n) at (\x, \y) {$x_{\n}$};
+			\node[gate, label=left:$w_1$] (g1) at (0,0) {$\land$};
+			\node[gate, label=right:$w_0$] (g2) at (1,0) {$\oplus$};
+			\foreach \f/\t in {x1/g1, x1/g2, x2/g1, x2/g2}
+				\draw[->] (\f) -- (\t);
+				
+			\begin{scope}[xshift=30mm, yshift=-10mm]
+				\foreach \n/\x/\y in {1/0/3, 2/1/3, 3/2/3}
+					\node[input] (x\n) at (\x, \y) {$x_{\n}$};
+				\node[gate,label=left:$a$] (g1) at (0.5,2) {$\oplus$};
+				\node[gate,label=left:$b$] (g2) at (1.5,2) {$\oplus$};
+				\node[gate,label=left:$c$] (g3) at (0.5,1) {$\lor$};
+				\node[gate, label=right:$w_0$] (g4) at (1.5,1) {$\oplus$};
+				\node[gate, label=right:$w_1$] (g5) at (0.5,0) {$\oplus$};
+				\foreach \f/\t in {x1/g1, x2/g1, x2/g2, x3/g2, g1/g3, g2/g3, g1/g4, g3/g5, g4/g5}
+					\draw[->] (\f) -- (\t);
+				\path (x3) edge[bend left,->] (g4);
+			\end{scope}
+		\end{tikzpicture}
+	\end{center}
+	\caption{The Half Adder and Full Adder in~the full binary basis.}
+	\label{figure:sum23}
+\end{figure}
+
+Using Half Adders and Full Adders, one can synthesize a~bit adder using the following algorithm that goes back to~Napier's \emph{Rabdologiæ} (1617),
+as~modernized by~Dadda~\cite{dadda}.
+\begin{quote}
+	Process the bits layer by~layer, in~the order of~increasing significance.
+	While the current significance layer~$i$ contains at~least three bits,
+	take three of~them and apply~FA to~replace them with a~pair of~bits
+	of~significance $i$~and~$i+1$. If~there are two bits left at~the current layer~$i$, apply~HA to~them to~get a~pair of~bits of~significance $i$~and~$i+1$.
+\end{quote}
+For example, by~applying this algorithm, one can compute $\SUM_5$ using two FA's and one HA. This results in a~circuit of~size~$12$, see Figure~\ref{figure:sumfive}. Also, by~applying this algorithm to~partial product of~bits of~two input $n$-bit numbers, one gets the well-known Dadda multiplier circuit~\cite{dadda}.
+
+\begin{figure}[!ht]
+	\begin{tikzpicture}
+		\begin{scope}[scale=.8]
+			%\draw[help lines] (0,-5) grid (16,6);
+%			\begin{scope}[yshift=-10mm]
+%				\foreach \n in {1,...,5}
+%				\node[input] (\n) at (\n,6) {$x_{\n}$};
+%				\draw (0.5, 5.5) rectangle (3.5, 4.5); \node at (2, 5) {$\SUM_3$};
+%				\foreach \n in {1, 2, 3}
+%				\draw[->] (\n) -- (\n, 5.5);
+%				\draw (2.5, 3.5) rectangle (5.5, 2.5); \node at (4, 3) {$\SUM_3$};
+%				\path (3, 4.5) edge[->] node[l] {0} (3, 3.5);
+%				\foreach \n in {4, 5}
+%				\draw[->] (\n) -- (\n, 3.5);
+%				\draw (1.5, 1.5) rectangle (3.5, 0.5); \node at (2.5, 1) {$\SUM_2$};
+%				\path (2, 4.5) edge[->] node[l] {1} (2, 1.5);
+%				\path (3, 2.5) edge[->] node[l] {1} (3, 1.5);
+%				\node[input] (w2) at (2,-1) {$w_2$};
+%				\node[input] (w1) at (3,-1) {$w_1$};
+%				\node[input] (w0) at (4.5,-1) {$w_0$};
+%				\path (2, 0.5) edge[->] node[l] {1} (w2);
+%				\path (3, 0.5) edge[->] node[l] {0} (w1);
+%				\path (4.5, 2.5) edge[->] node[l] {0} (w0);
+%			\end{scope}
+			
+			\begin{scope}[label distance=-1mm, xshift=70mm, yshift=20mm]
+				\foreach \n/\x/\y in {1/0/3, 2/1/3, 3/2/3, 4/2.5/1, 5/3.5/1}
+				\node[input] (x\n) at (\x, \y) {$x_{\n}$};
+				\node[gate,label=left:$g_1$] (g1) at (0.5,2) {$\oplus$};
+				\node[gate,label=left:$g_2$] (g2) at (1.5,2) {$\oplus$};
+				\node[gate,label=left:$g_3$] (g3) at (0.5,1) {$\lor$};
+				\node[gate,label=left:$g_4$] (g4) at (1.5,1) {$\oplus$};
+				\node[gate,label=left:$g_5$] (g5) at (0.5,0) {$\oplus$};
+				\node[gate,label=left:$g_6$] (g6) at (2,-1) {$\oplus$};
+				\node[gate,label=right:$g_7$] (g7) at (3,-1) {$\oplus$};
+				\node[gate,label=right:$g_8$] (g8) at (2,-2) {$\lor$};
+				\node[gate, label=right:$w_0$] (g9) at (3,-2) {$\oplus$};
+				\node[gate, label=right:$g_9$] (g10) at (2,-3) {$\oplus$};
+				\node[gate, label=right:$w_1$] (g11) at (2,-4) {$\oplus$};
+				\node[gate, label=left:$w_2$] (g12) at (1,-4) {$\land$};
+				
+				\foreach \f/\t in {x1/g1, x2/g1, x2/g2, x3/g2, g1/g3, g2/g3, g1/g4, g3/g5, g4/g5, g4/g6, x4/g6, x4/g7, x5/g7, g6/g8, g7/g8, g8/g10, g6/g9, g9/g10, g10/g11, g10/g12}
+				\draw[->] (\f) -- (\t);
+				
+				\path (x3) edge[->,bend left] (g4);
+				\path (x5) edge[->,bend left=35] (g9);
+				\path (g5) edge[->,bend right=25] (g11);
+				\path (g5) edge[->,bend right=15] (g12);
+				
+				\draw[dashed] (-0.5,-0.25) rectangle (2,2.5);
+				\draw[dashed] (1.25,-3.25) rectangle (4,-0.5);
+				\draw[dashed] (0,-3.5) rectangle (3,-4.5);
+			\end{scope}
+		\end{scope}
+	\end{tikzpicture}
+	\caption{A~circuit of~size~$12$ computing~$\SUM_5$ composed of~two Full Adders and one Half Adder.}
+	\label{figure:sumfive}
+\end{figure}
+
+Interestingly, in~some regimes, this algorithm leads to~a~circuit 
+that is~\emph{provably} optimal. For example, it~adds two $n$-bit 
+numbers using a~single Half Adder and $n-1$ Full Adders. The resulting
+circuit has size $2+5(n-1)=5n-3$. Red'kin~\cite{Red81} proved
+that there~is no~smaller circuit for this function.
+At~the same time, in~various other scenarios, the algorithm leads 
+to~a~suboptimal circuit. For example, the circuit from Figure~\ref{figure:sumfive} is~suboptimal as~$\SUM_5$
+can be~computed by a~circuit of~size~$11$ (see~\cite{DBLP:conf/mfcs/KulikovPS22}).
+In~general, whereas the algorithm produces a~circuit of~size about~$5n$
+for $\SUM_5$, this function can be~computed by~a~circuit of~size about $4.5n$
+as~shown by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
+
+In~this paper, we~generalize the construction by~Demenkov et~al.
+Namely, we~show that whereas the algorithm described above produces
+a~circuit of~size at~most $5n-3m$ computing $\BA$, one can construct
+a~circuit of~size at~most $4.5n-m$. In~the regimes where $m$~is~small
+compared to~$n$, this gives a~circuit that is~about $10\%$ smaller.
+This applies to~the Dadda multiplier.
+We~complement our theoretical result by~an~open source implementation
+of~generators producing circuits for bit addition and multiplication.
 
 
-\begin{center}
-    \begin{tikzpicture}
-        %\draw[help lines] (0, -2) grid (8, 1);
-        \tikzstyle{dot}=[circle, fill=black, inner sep=0mm, minimum size=1mm]
-        \tikzstyle{l}=[dotted, gray, thin]
-
-        \tikzmath{\d=0.4;}
-
-        \begin{scope}
-            \foreach \y in {-2, ..., 2}
-                \node[dot] at (0, \y * \d) {};
-            \node at (0, -2) {$\SUM_5$};
-
-            \foreach \x [count=\n from 0] in {0} {
-                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
-                \node[gray, below] at (\x * \d, -1) {$\n$};
-            }
-        \end{scope}
-
-        \begin{scope}[xshift=20mm]
-            \foreach \x in {-2, ..., 2} {
-                \node[dot] at (\x * \d, \d / 2) {};
-                \node[dot] at (\x * \d, - \d / 2) {};
-            }
-            \node at (0, -2) {$\ADD_5$};
-
-            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
-                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
-                \node[gray, below] at (\x * \d, -1) {$\n$};
-            }
-        \end{scope}
-
-        \begin{scope}[xshift=55mm]
-            \foreach \y in {-2, ..., 2}
-                \foreach \x in {-2, ..., 2} {
-                    \node[dot] at (\x * \d + \y * \d, \y * \d) {};
-            }
-            \node at (0, -2) {$\MULT_5$};
-
-            \foreach \x [count=\n from 0] in {4, 3, ..., -4} {
-                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
-                \node[gray, below] at (\x * \d, -1) {$\n$};
-            }
-        \end{scope}
-    \end{tikzpicture}
-\end{center}
 
 
-\begin{center}
-    \begin{tikzpicture}
-        %\draw[help lines] (0, -2) grid (8, 1);
-        \tikzstyle{dot}=[circle, fill=black, inner sep=0mm, minimum size=1mm]
-        \tikzstyle{l}=[dotted, gray, thin]
-
-        \tikzmath{\d=0.4;}
-
-        \begin{scope}
-            \foreach \x in {-2, ..., 2}
-                \node[dot] at (\x * \d, - \d / 2) {};
-            \node[dot] at (2 * \d, \d / 2) {};
-
-            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
-                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
-                \node[gray, below] at (\x * \d, -1) {$\n$};
-            }
-        \end{scope}
-
-
-        \begin{scope}[xshift=30mm]
-            \foreach \x in {-2, ..., 2} {
-                \node[dot] at (\x * \d, \d) {};
-                \node[dot] at (\x * \d, 0) {};
-                \node[dot] at (\x * \d, -\d) {};
-            }
-
-            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
-                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
-                \node[gray, below] at (\x * \d, -1) {$\n$};
-            }
-        \end{scope}
-
-        \begin{scope}[xshift=60mm]
-            \foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 1/-1, 1/0, 2/-1}
-                \node[dot] at (\x * \d, \y * \d) {};
-
-            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
-                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
-                \node[gray, below] at (\x * \d, -1) {$\n$};
-            }
-        \end{scope}
-    \end{tikzpicture}
-\end{center}
-
-
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
 
 \end{document}
 
