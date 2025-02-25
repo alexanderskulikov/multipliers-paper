@@ -6,7 +6,7 @@
 \tikzstyle{dot}=[circle, fill=black, inner sep=0mm, minimum size=1mm]
 \tikzstyle{l}=[dotted, gray, thin]
 \tikzstyle{input}=[draw=none, inner sep=.2mm]
-\tikzstyle{gate}=[draw, circle, inner sep=.2mm, minimum size=4mm]
+\tikzstyle{gate}=[draw, circle, inner sep=.2mm, minimum size=2mm]
 %\tikzstyle{l}=[draw=none, rectangle, fill=white, inner sep=.4mm]
 \tikzmath{\d=0.4;}
 
@@ -208,7 +208,7 @@ In~the full binary basis, they can be~implemented in~two and five gates, respect
 
 \begin{figure}[!ht]
 	\begin{center}
-		\begin{tikzpicture}[label distance=-.9mm, scale=.8]
+		\begin{tikzpicture}[label distance=-.9mm, scale=.7]
 			\foreach \n/\x/\y in {1/0/1, 2/1/1}
 				\node[input] (x\n) at (\x, \y) {$x_{\n}$};
 			\node[gate, label=left:$w_1$] (g1) at (0,0) {$\land$};
@@ -242,11 +242,11 @@ as~modernized by~Dadda~\cite{dadda}.
 	take three of~them and apply~FA to~replace them with a~pair of~bits
 	of~significance $i$~and~$i+1$. If~there are two bits left at~the current layer~$i$, apply~HA to~them to~get a~pair of~bits of~significance $i$~and~$i+1$.
 \end{quote}
-For example, by~applying this algorithm, one can compute $\SUM_5$ using two FA's and one HA. This results in a~circuit of~size~$12$, see Figure~\ref{figure:sumfive}. Also, by~applying this algorithm to~partial product of~bits of~two input $n$-bit numbers, one gets the well-known Dadda multiplier circuit~\cite{dadda}.
+For example, by~applying this algorithm, one can compute $\SUM_5$ using two FA's and one HA. This results in a~circuit of~size~$12$, see Figure~\ref{figure:sumfive}. Also, by~applying this algorithm to~partial products of~bits of~two input $n$-bit numbers, one gets the well-known Dadda multiplier circuit~\cite{dadda}.
 
 \begin{figure}[!ht]
 	\begin{tikzpicture}
-		\begin{scope}[scale=.8]
+		\begin{scope}[scale=.7]
 			%\draw[help lines] (0,-5) grid (16,6);
 %			\begin{scope}[yshift=-10mm]
 %				\foreach \n in {1,...,5}
