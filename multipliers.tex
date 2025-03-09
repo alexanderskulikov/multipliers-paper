@@ -3,11 +3,18 @@
 \usepackage{tikz}
 \usetikzlibrary{math}
 
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\usepackage{listings}
+
 \tikzstyle{dot}=[circle, fill=black, inner sep=0mm, minimum size=1mm]
 \tikzstyle{l}=[dotted, gray, thin]
 \tikzstyle{input}=[draw=none, inner sep=.2mm]
 \tikzstyle{gate}=[draw, circle, inner sep=.2mm, minimum size=2mm]
-%\tikzstyle{l}=[draw=none, rectangle, fill=white, inner sep=.4mm]
+\tikzstyle{outgate}         = [gate, thick]
+\tikzstyle{wire}            = [draw,->]
+\tikzstyle{notwire}         = [draw,->,dashed]
 \tikzmath{\d=0.4;}
 
 \usepackage[textwidth=15mm]{todonotes}
@@ -306,7 +313,7 @@ For example, by~applying this algorithm, one can compute $\SUM_5$ using two FA's
 Interestingly, in~some regimes, this algorithm leads to~a~circuit 
 that is~\emph{provably} optimal. For example, it~adds two $n$-bit 
 numbers using a~single Half Adder and $n-1$ Full Adders. The resulting
-circuit has size $2+5(n-1)=5n-3$. Red'kin~\cite{Red81} proved
+circuit is~known as~\emph{ripple-carry adder} and has size $2+5(n-1)=5n-3$. Red'kin~\cite{Red81} proved
 that there~is no~smaller circuit for this function.
 At~the same time, in~various other scenarios, the algorithm leads 
 to~a~suboptimal circuit. For example, the circuit from Figure~\ref{figure:sumfive} is~suboptimal as~$\SUM_5$
@@ -324,6 +331,225 @@ This applies to~the Dadda multiplier.
 We~complement our theoretical result by~an~open source implementation
 of~generators producing circuits for bit addition and multiplication.
 
+\section{General Setting}
+For a~predicate~$P$, $[P]$ is~the Iverson bracket: $[P]=1$ if $P$~is true and $[P]=0$ otherwise. For a~non-negative integer~$q$,
+$\operatorname{bin}(q)$ is~the binary representation of~$q$
+(padded with a~number of~leading zeroes if~needed).
+Conversely, for a~bit-string $b=(b_0,\dotsc, b_k)$, $\operatorname{int}(b)=\sum_{i=0}^{k}2^ib_i$ is~the corresponding integer.
+
+\subsection{Boolean Functions}
+Let $B_{n,m}=\{f \colon \{0,1\}^n \to \{0,1\}^m\}$ be~the set of~all Boolean functions with $n$~inputs and $m$~outputs
+and let $B_n=B_{n,1}$ be the set of~all $n$-input single-output functions
+(that is, predicates).
+A~function of the form $f \colon \{0,1\}^n \to \{0,1,*\}^m$
+is~called \emph{partially defined}: $*$ is~known~as \emph{don't care} symbol
+and means an~undefined Boolean value.
+
+Below, we~define a~number of~specific Boolean functions studied in~this paper.
+By $x=(x_1,\dotsc, x_n)$~and~$y=(y_1, \dotsc, y_n)$ we~denote input $n$-bit strings
+and $\operatorname{sum}(x)=x_1+\dotsb+x_n$.
+\begin{itemize}
+	\item $\operatorname{MAJ}_n \in B_n$ is~the majority function, that is, it~is equal to~$1$ if~and only~if more than half of~the $n$~input bits are~$1$'s:
+	\(\operatorname{MAJ}_n(x)=[\operatorname{sum}(x) > n/2].\)
+	\item $\operatorname{SUM}_n \in B_{n, \lceil \log_2(n+1) \rceil}$ computes the binary representation of~the sum of~$n$~input bits:
+	\(\operatorname{SUM}_n(x)=\operatorname{bin}(\operatorname{sum}(x)).\)
+	\item $\operatorname{SORT}_n \in B_{n,n}$ sorts the given $n$~bits:
+	\(\operatorname{SORT}_n(x)=(x_1', \dotsc, x_n'),\)
+	where $x_1' \le \dotsb \le x_n'$ and $\operatorname{sum}(x)=\operatorname{sum}(x')$.
+	\item $\operatorname{MULT}_n \in B_{2n, 2n}$ computes the product of~the given two~$n$-bit integers:
+	\(\operatorname{MULT}_n(x, y)=\operatorname{bin}(\operatorname{int}(x) \cdot \operatorname{int}(y)).\)
+	\item $\operatorname{SQR}_n \in B_{n, 2n}$ computes the square of~the given $n$-bit integer:
+	\(\operatorname{SQR}_n(x)=\operatorname{MULT}_n(x, x).\)
+	\item $\operatorname{SQRT}_n \in B_{n, n/2}$ computes the square root of~the given $n$-bit integer:
+	\(\operatorname{SQRT}_n(x)=\operatorname{bin}(\lfloor \sqrt{\operatorname{int}(x)}\rfloor).\)
+	\item $\operatorname{DIV}_n \in B_{2n, n}$ and $\operatorname{MOD}_n \in B_{2n, n}$
+	functions compute, respectively, the quotient and the remainder of~the first input integer divided by~the second input integer:
+	\begin{align*}
+		\operatorname{DIV}_n(x,y)&=\operatorname{bin}(\lfloor \operatorname{int}(x) /\operatorname{int(y)}\rfloor),\\
+		\operatorname{MOD}_n(x,y)&=\operatorname{bin}(\operatorname{int}(x) \bmod \operatorname{int(y)}).
+	\end{align*}
+\end{itemize}
+
+\subsection{Boolean Circuits}
+A~circuit is~a~natural way of~computing Boolean functions.
+It~is an~acyclic directed graph of in-degree at~most~$2$ whose $n$~source
+nodes are labeled with input variables
+$x_1, \dotsc, x_n$ and all other nodes (called \emph{internal})
+are labeled with Boolean operations from
+$B_1 \cup B_2$ (that~is, unary and binary Boolean predicates).
+The nodes of~the circuit are called \emph{gates} and each gate computes
+a~(single-output) Boolean function of~$x_1, \dotsc, x_n$. Thus, if~$m$ gates of the
+circuit are marked as~outputs, it~computes a~function from $B_{n,m}$.
+The size of a~circuit is~its number of~internal binary gates
+(it~is common to~assume that unary gates are given for free).
+
+Figure~\ref{fig:fulladder} shows an~example of~a~circuit of~size~$5$ computing
+$\operatorname{SUM}_3$. It~also highlights that a~circuit corresponds
+to~an~extremely simple program (called a~straight line program):
+every line of~this program just applies a~unary or~binary Boolean operation
+to~input bits or~the results of~the previous lines.
+
+
+\begin{figure}[tb]
+	\begin{center}
+		\begin{tikzpicture}[label distance=-.9mm, yscale=1]
+			%\draw[help lines] (0, 0) grid (6, 6);
+			\foreach \n/\x/\y in {1/0/3, 2/1/3, 3/2/3}
+			\node[input] (x\n) at (\x, \y) {$x_{\n}$};
+			\node[gate, label=left:$a$] (g1) at (0.5,2) {$\oplus$};
+			\node[gate, label=left:$b$] (g2) at (1.5,2) {$\oplus$};
+			\node[gate, label=left:$c$] (g3) at (0.5,1) {$\lor$};
+			\node[outgate, label=right:$w_0$] (g4) at (1.5,1) {$\oplus$};
+			\node[outgate, label=right:$w_1$] (g5) at (0.5,0) {$\oplus$};
+			\foreach \f/\t in {x1/g1, x2/g1, x2/g2, x3/g2, g1/g3, g2/g3, g1/g4, g3/g5, g4/g5}
+			\draw[wire] (\f) -- (\t);
+			\path (x3) edge[bend left, wire] (g4);
+			
+			\node (c) at (0.5, -1) {\strut carry};
+			\node (s) at (1.5, -1) {\strut sum};
+			\draw[wire] (g4) -- (s);
+			\draw[wire] (g5) -- (c);
+			
+			\node[right] at (3, 1) {
+				\begin{lstlisting}[language=Python]
+					def sum3(x1, x2, x3):
+					a = x1 ^ x2
+					b = x2 ^ x3
+					c = a | b
+					w0 = a ^ x3
+					w1 = c ^ w0
+					return w0, w1
+				\end{lstlisting}
+			};
+		\end{tikzpicture}
+	\end{center}
+	\caption{A~circuit (known as~Full Adder) and the corresponding straight line program
+		(in~\texttt{Python}) for $\operatorname{SUM}_3$. The output gates are shown in~bold.}
+	\label{fig:fulladder}
+\end{figure}
+
+We~assume that a~gate of~a~circuit can compute any unary or~binary Boolean function.
+It~is not difficult to~see that, for a~given Boolean function~$f$,
+the minimum size of a~circuit computing~$f$ is~equal
+to~the minimum size of a~circuit for~$f$
+when each gate computes either
+binary XOR ($\oplus$), binary AND ($\land$), or unary NOT ($\neg$):
+indeed, every binary Boolean operation is~either a~summation
+or a~multiplication with possibly negated inputs and outputs. For this reason,
+when all unary and binary operations are allowed, we~say that this is an~XAIG circuit:
+X~stands for XOR (summation),
+A~stands for AND (multiplication),
+I~stands for inverter (negation),
+and G~stands for a~graph.
+
+It~is~well known that any Boolean function can also be~computed
+by~a~circuit that only uses AND's and NOT's as~operations in~gates.
+They are called AIG circuits \cite{BiereHeljankoWieringa2011} and this is a~convenient format for representing
+a~circuit in~practice: since every binary gate computes an~AND, one just stores
+a~graph of~in-degree~$2$ (without storing the operations computed in~the gates)
+and a~list of~flags telling which of~the edges are negated (or~inverted).
+See an~example in~Figure~\ref{fig:fulladderaig}.
+
+\begin{figure}[tb]
+	\begin{center}
+		\begin{tikzpicture}[yscale=1]
+			%\draw[help lines] (0, 0) grid (6, 6);
+			\foreach \n/\x/\y in {1/0/1, 2/1/3, 3/2/3}
+			\node[input] (x\n) at (\x, \y) {$x_{\n}$};
+			\foreach \n/\x/\y/\op/\p/\q in {1/2/2/\land/x2/x3, 2/1/2/\lor/x2/x3, 3/1/1/>/1/2, 4/0/0/\lor/x1/3, 5/1/0/\land/x1/3} {
+				\node[gate] (\n) at (\x, \y) {$\op$};
+				\draw[wire] (\p) -- (\n);
+				\draw[wire] (\q) -- (\n);
+			}
+			\foreach \n/\x/\y/\op/\p/\q in {6/0/-1/>/4/5, 7/2/-1/\lor/1/5} {
+				\node[outgate] (\n) at (\x, \y) {$\op$};
+				\draw[wire] (\p) -- (\n);
+				\draw[wire] (\q) -- (\n);
+			}
+			%\node at (1, -2.5) {(a)};
+			
+			\node (c) at (2, -2) {\strut carry};
+			\node (s) at (0, -2) {\strut sum};
+			\draw[wire] (6) -- (s);
+			\draw[wire] (7) -- (c);
+			
+			\begin{scope}[xshift=40mm]
+				\foreach \n/\x/\y in {1/0/1, 2/1/3, 3/2/3}
+				\node[input] (x\n) at (\x, \y) {$x_{\n}$};
+				\foreach \n/\x/\y/\op/\p/\wp/\q/\wq in {
+					1/2/2/\land/x2/wire/x3/wire,
+					2/1/2/\lor/x2/notwire/x3/notwire,
+					3/1/1/>/1/notwire/2/notwire,
+					4/0/0/\lor/x1/notwire/3/notwire,
+					5/1/0/\land/x1/wire/3/wire}
+				{
+					\node[gate] (\n) at (\x, \y) {};
+					\draw[\wp] (\p) -- (\n);
+					\draw[\wq] (\q) -- (\n);
+				}
+				\foreach \n/\x/\y/\op/\p/\wp/\q/\wq in {
+					6/0/-1/>/4/notwire/5/notwire,
+					7/2/-1/\lor/1/notwire/5/notwire}
+				{
+					\node[outgate] (\n) at (\x, \y) {};
+					\draw[\wp] (\p) -- (\n);
+					\draw[\wq] (\q) -- (\n);
+				}
+				%\node at (1, -2.5) {(b)};
+				
+				\node (c) at (2, -2) {\strut carry};
+				\node (s) at (0, -2) {\strut sum};
+				\draw[wire] (6) -- (s);
+				\draw[notwire] (7) -- (c);
+			\end{scope}
+		\end{tikzpicture}
+	\end{center}
+	\caption{A~circuit over the basis $B_2 \setminus \{\oplus, \equiv\}$ computing
+		$\operatorname{SUM}_3$ (left) and its AIG representation (right). The output gates are shown in~bold, whereas the negated wires are~shown dashed. The binary Boolean operation~$>$
+		is~defined in a~natural way: $a>b=a \land \overline{b}$.}
+	\label{fig:fulladderaig}
+\end{figure}
+
+\begin{figure*}%[!ht]
+	\begin{center}
+		\begin{tikzpicture}[xscale=0.75, yscale=.6]
+			\foreach \n in {2,...,17}
+			\node[input] (\n) at (\n,6) {$x_{\n}$};
+			\foreach \i in {1,...,8} {
+				\tikzmath{\k=int(2*\i); \j=int(2*\i+1);}
+				\node[gate] (a) at (\j,5) {$\oplus$};
+				\draw[->] (\k) -- (a); \draw[->] (\j) -- (a);
+				\draw[->] (a) -- (\j,4); \draw[->] (\k) -- (\k,4);
+			}
+			\foreach \x/\y/\w in {2/4/3, 6/4/3, 10/4/3, 14/4/3, 2/2.5/7, 10/2.5/7, 2/1/15} {
+				\draw (\x-0.15,\y) rectangle (\x+\w+0.15,\y-1);
+				\node at (\x+\w/2,\y-0.5) {MDFA};
+			}
+			\foreach \y/\l/\w in {3.5/x_1/w_0, 2/0/w_1, 0.5/0/w_2} {
+				\node[input] (b) at (1,\y) {$\l$};
+				\draw[->] (b) -- (1.85,\y);
+				\node[input] (c) at (18,\y) {$\w$};
+				\draw[->] (17.15,\y) -- (c);
+			}
+			\foreach \x in {3, 4, 7, 8, 11, 12, 15, 16}
+			\draw[->] (\x,3) -- (\x,2.5);
+			\foreach \x in {4, 7, 12, 15}
+			\draw[->] (\x,1.5) -- (\x,1);
+			\foreach \x/\y in {5/3.5, 9/3.5, 13/3.5, 9/2}
+			\draw[->] (\x+0.15,\y) -- (\x+0.85,\y);
+			
+			\node[input] (w3) at (12,-2) {$w_3$};
+			\draw[->] (12,0) -- (w3);
+			\node[gate] (x) at (7,-1) {$>$};
+			\draw[->] (7,0) -- (x);
+			\node[input] (w4) at (7,-2) {$w_4$};
+			\draw[->] (x) -- (w4);
+			\path (12,0) edge[->,out=-135,in=0] (x);
+		\end{tikzpicture}
+	\end{center}
+	\caption{A~circuit computing $\SUM_{17}$ composed out of~MDFA blocks.}
+	\label{figure:sum17}
+\end{figure*}
 
 
 
