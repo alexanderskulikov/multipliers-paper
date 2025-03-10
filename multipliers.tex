@@ -3,9 +3,6 @@
 \usepackage{tikz}
 \usetikzlibrary{math}
 
-\usepackage{algorithm}
-\usepackage{algorithmic}
-
 \usepackage{listings}
 
 \tikzstyle{dot}=[circle, fill=black, inner sep=0mm, minimum size=1mm]
@@ -83,12 +80,14 @@
 %\[\SUM_n(x_1, \dotsc, x_n)=(s_0, \dotsc, s_{l-1}) \text{ such that } \sum_{i=1}^{n}x_i=\sum_{i=0}^{l-1}2^is_i,\]
 %where $l=\lceil \log_2(n+1) \rceil$.
 
-Bit addition is~one of~the most frequently used operations
-in~Boolean circuit synthesis. It~arises, for example, in~the
-following scenarios.
+Bit addition arises virtually everywhere in~digital circuits:
+arithmetic operations,
+increment/decrement operators,
+computing addresses and table indices, and so~on.
+Three specific scenarios where it~is used are listed below.
 \begin{itemize}
 	\item Adding two $n$-bit numbers.
-	\item Computing a~symmetric Boolean function 
+	\item Computing a~symmetric Boolean function
 		(such as~majority or~sorting).
 		A~natural way of~doing this is~to~first compute
 		the binary representation of~the sum of~$n$~input bits
@@ -104,38 +103,38 @@ In~terms of~the dot-notation introduced by~Dadda~\cite{dadda}, the three scenari
 	\begin{center}
 	    \begin{tikzpicture}
 	        %\draw[help lines] (0, -2) grid (8, 1);
-	
+
 	        \begin{scope}[xshift=25mm]
 	            \foreach \y in {-2, ..., 2}
 	                \node[dot] at (0, \y * \d) {};
 	            \node at (0, -2) {$\SUM_5$};
-	
+
 	            \foreach \x [count=\n from 0] in {0} {
 	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
 	                \node[gray, below] at (\x * \d, -1) {$\n$};
 	            }
 	        \end{scope}
-	
+
 	        \begin{scope}[xshift=0mm]
 	            \foreach \x in {-2, ..., 2} {
 	                \node[dot] at (\x * \d, \d / 2) {};
 	                \node[dot] at (\x * \d, - \d / 2) {};
 	            }
 	            \node at (0, -2) {$\ADD_5$};
-	
+
 	            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
 	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
 	                \node[gray, below] at (\x * \d, -1) {$\n$};
 	            }
 	        \end{scope}
-	
+
 	        \begin{scope}[xshift=55mm]
 	            \foreach \y in {-2, ..., 2}
 	                \foreach \x in {-2, ..., 2} {
 	                    \node[dot] at (\x * \d + \y * \d, \y * \d) {};
 	            }
 	            \node at (0, -2) {$\MULT_5$};
-	
+
 	            \foreach \x [count=\n from 0] in {4, 3, ..., -4} {
 	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
 	                \node[gray, below] at (\x * \d, -1) {$\n$};
@@ -148,7 +147,9 @@ In~terms of~the dot-notation introduced by~Dadda~\cite{dadda}, the three scenari
 \end{figure}
 
 There are many other cases where one needs to~add bits.
-Say, one may want to~add a~single bit to an~$n$-bit number, 
+Say, one may want
+to~add a~single bit to an~$n$-bit number (the increment operation
+is a~special case),
 or~to~add three $n$-bit numbers, or~add a~few bits of~varying significance,
 see Figure~\ref{figure:dot2}.
 
@@ -159,31 +160,31 @@ see Figure~\ref{figure:dot2}.
 	            \foreach \x in {-2, ..., 2}
 	                \node[dot] at (\x * \d, - \d / 2) {};
 	            \node[dot] at (2 * \d, \d / 2) {};
-	
+
 	            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
 	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
 	                \node[gray, below] at (\x * \d, -1) {$\n$};
 	            }
 	        \end{scope}
-	
-	
+
+
 	        \begin{scope}[xshift=30mm]
 	            \foreach \x in {-2, ..., 2} {
 	                \node[dot] at (\x * \d, \d) {};
 	                \node[dot] at (\x * \d, 0) {};
 	                \node[dot] at (\x * \d, -\d) {};
 	            }
-	
+
 	            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
 	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
 	                \node[gray, below] at (\x * \d, -1) {$\n$};
 	            }
 	        \end{scope}
-	
+
 	        \begin{scope}[xshift=60mm]
 	            \foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 1/-1, 1/0, 2/-1}
 	                \node[dot] at (\x * \d, \y * \d) {};
-	
+
 	            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
 	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
 	                \node[gray, below] at (\x * \d, -1) {$\n$};
@@ -202,7 +203,7 @@ It~outputs~$m$ bits of~significance $0,\dotsc,m-1$ where $m$~is
 minimal such that $\sum_{i=0}^{r}k_i2^i \le 2^m-1$. This way, $\SUM_n=\BA_{0,0,\dotsc,0}$ and $\ADD_n=\BA_{0,0,1,1,\dotsc,n-1,n-1}$.
 
 Since bit addition is~such a~basic task in~Boolean circuit synthesis,
-a~lot of~research has been done on~constructing efficient circuits 
+a~lot of~research has been done on~constructing efficient circuits
 for various special cases of~it, see~\cite{DBLP:journals/cc/PatersonZ93}
 and references therein.\todo{add more references}
 A~vast majority of~these results is~devoted to~optimizing the circuit \emph{depth} (also known as~delay).
@@ -222,7 +223,7 @@ In~the full binary basis, they can be~implemented in~two and five gates, respect
 			\node[gate, label=right:$w_0$] (g2) at (1,0) {$\oplus$};
 			\foreach \f/\t in {x1/g1, x1/g2, x2/g1, x2/g2}
 				\draw[->] (\f) -- (\t);
-				
+
 			\begin{scope}[xshift=30mm, yshift=-10mm]
 				\foreach \n/\x/\y in {1/0/3, 2/1/3, 3/2/3}
 					\node[input] (x\n) at (\x, \y) {$x_{\n}$};
@@ -275,7 +276,7 @@ For example, by~applying this algorithm, one can compute $\SUM_5$ using two FA's
 %				\path (3, 0.5) edge[->] node[l] {0} (w1);
 %				\path (4.5, 2.5) edge[->] node[l] {0} (w0);
 %			\end{scope}
-			
+
 			\begin{scope}[label distance=-1mm, xshift=70mm, yshift=20mm]
 				\foreach \n/\x/\y in {1/0/3, 2/1/3, 3/2/3, 4/2.5/1, 5/3.5/1}
 				\node[input] (x\n) at (\x, \y) {$x_{\n}$};
@@ -291,15 +292,15 @@ For example, by~applying this algorithm, one can compute $\SUM_5$ using two FA's
 				\node[gate, label=right:$g_9$] (g10) at (2,-3) {$\oplus$};
 				\node[gate, label=right:$w_1$] (g11) at (2,-4) {$\oplus$};
 				\node[gate, label=left:$w_2$] (g12) at (1,-4) {$\land$};
-				
+
 				\foreach \f/\t in {x1/g1, x2/g1, x2/g2, x3/g2, g1/g3, g2/g3, g1/g4, g3/g5, g4/g5, g4/g6, x4/g6, x4/g7, x5/g7, g6/g8, g7/g8, g8/g10, g6/g9, g9/g10, g10/g11, g10/g12}
 				\draw[->] (\f) -- (\t);
-				
+
 				\path (x3) edge[->,bend left] (g4);
 				\path (x5) edge[->,bend left=35] (g9);
 				\path (g5) edge[->,bend right=25] (g11);
 				\path (g5) edge[->,bend right=15] (g12);
-				
+
 				\draw[dashed] (-0.5,-0.25) rectangle (2,2.5);
 				\draw[dashed] (1.25,-3.25) rectangle (4,-0.5);
 				\draw[dashed] (0,-3.5) rectangle (3,-4.5);
@@ -310,12 +311,12 @@ For example, by~applying this algorithm, one can compute $\SUM_5$ using two FA's
 	\label{figure:sumfive}
 \end{figure}
 
-Interestingly, in~some regimes, this algorithm leads to~a~circuit 
-that is~\emph{provably} optimal. For example, it~adds two $n$-bit 
+Interestingly, in~some regimes, this algorithm leads to~a~circuit
+that is~\emph{provably} optimal. For example, it~adds two $n$-bit
 numbers using a~single Half Adder and $n-1$ Full Adders. The resulting
 circuit is~known as~\emph{ripple-carry adder} and has size $2+5(n-1)=5n-3$. Red'kin~\cite{Red81} proved
 that there~is no~smaller circuit for this function.
-At~the same time, in~various other scenarios, the algorithm leads 
+At~the same time, in~various other scenarios, the algorithm leads
 to~a~suboptimal circuit. For example, the circuit from Figure~\ref{figure:sumfive} is~suboptimal as~$\SUM_5$
 can be~computed by a~circuit of~size~$11$ (see~\cite{DBLP:conf/mfcs/KulikovPS22}).
 In~general, whereas the algorithm produces a~circuit of~size about~$5n$
@@ -389,45 +390,6 @@ to~an~extremely simple program (called a~straight line program):
 every line of~this program just applies a~unary or~binary Boolean operation
 to~input bits or~the results of~the previous lines.
 
-
-\begin{figure}[tb]
-	\begin{center}
-		\begin{tikzpicture}[label distance=-.9mm, yscale=1]
-			%\draw[help lines] (0, 0) grid (6, 6);
-			\foreach \n/\x/\y in {1/0/3, 2/1/3, 3/2/3}
-			\node[input] (x\n) at (\x, \y) {$x_{\n}$};
-			\node[gate, label=left:$a$] (g1) at (0.5,2) {$\oplus$};
-			\node[gate, label=left:$b$] (g2) at (1.5,2) {$\oplus$};
-			\node[gate, label=left:$c$] (g3) at (0.5,1) {$\lor$};
-			\node[outgate, label=right:$w_0$] (g4) at (1.5,1) {$\oplus$};
-			\node[outgate, label=right:$w_1$] (g5) at (0.5,0) {$\oplus$};
-			\foreach \f/\t in {x1/g1, x2/g1, x2/g2, x3/g2, g1/g3, g2/g3, g1/g4, g3/g5, g4/g5}
-			\draw[wire] (\f) -- (\t);
-			\path (x3) edge[bend left, wire] (g4);
-			
-			\node (c) at (0.5, -1) {\strut carry};
-			\node (s) at (1.5, -1) {\strut sum};
-			\draw[wire] (g4) -- (s);
-			\draw[wire] (g5) -- (c);
-			
-			\node[right] at (3, 1) {
-				\begin{lstlisting}[language=Python]
-					def sum3(x1, x2, x3):
-					a = x1 ^ x2
-					b = x2 ^ x3
-					c = a | b
-					w0 = a ^ x3
-					w1 = c ^ w0
-					return w0, w1
-				\end{lstlisting}
-			};
-		\end{tikzpicture}
-	\end{center}
-	\caption{A~circuit (known as~Full Adder) and the corresponding straight line program
-		(in~\texttt{Python}) for $\operatorname{SUM}_3$. The output gates are shown in~bold.}
-	\label{fig:fulladder}
-\end{figure}
-
 We~assume that a~gate of~a~circuit can compute any unary or~binary Boolean function.
 It~is not difficult to~see that, for a~given Boolean function~$f$,
 the minimum size of a~circuit computing~$f$ is~equal
@@ -450,65 +412,7 @@ a~graph of~in-degree~$2$ (without storing the operations computed in~the gates)
 and a~list of~flags telling which of~the edges are negated (or~inverted).
 See an~example in~Figure~\ref{fig:fulladderaig}.
 
-\begin{figure}[tb]
-	\begin{center}
-		\begin{tikzpicture}[yscale=1]
-			%\draw[help lines] (0, 0) grid (6, 6);
-			\foreach \n/\x/\y in {1/0/1, 2/1/3, 3/2/3}
-			\node[input] (x\n) at (\x, \y) {$x_{\n}$};
-			\foreach \n/\x/\y/\op/\p/\q in {1/2/2/\land/x2/x3, 2/1/2/\lor/x2/x3, 3/1/1/>/1/2, 4/0/0/\lor/x1/3, 5/1/0/\land/x1/3} {
-				\node[gate] (\n) at (\x, \y) {$\op$};
-				\draw[wire] (\p) -- (\n);
-				\draw[wire] (\q) -- (\n);
-			}
-			\foreach \n/\x/\y/\op/\p/\q in {6/0/-1/>/4/5, 7/2/-1/\lor/1/5} {
-				\node[outgate] (\n) at (\x, \y) {$\op$};
-				\draw[wire] (\p) -- (\n);
-				\draw[wire] (\q) -- (\n);
-			}
-			%\node at (1, -2.5) {(a)};
-			
-			\node (c) at (2, -2) {\strut carry};
-			\node (s) at (0, -2) {\strut sum};
-			\draw[wire] (6) -- (s);
-			\draw[wire] (7) -- (c);
-			
-			\begin{scope}[xshift=40mm]
-				\foreach \n/\x/\y in {1/0/1, 2/1/3, 3/2/3}
-				\node[input] (x\n) at (\x, \y) {$x_{\n}$};
-				\foreach \n/\x/\y/\op/\p/\wp/\q/\wq in {
-					1/2/2/\land/x2/wire/x3/wire,
-					2/1/2/\lor/x2/notwire/x3/notwire,
-					3/1/1/>/1/notwire/2/notwire,
-					4/0/0/\lor/x1/notwire/3/notwire,
-					5/1/0/\land/x1/wire/3/wire}
-				{
-					\node[gate] (\n) at (\x, \y) {};
-					\draw[\wp] (\p) -- (\n);
-					\draw[\wq] (\q) -- (\n);
-				}
-				\foreach \n/\x/\y/\op/\p/\wp/\q/\wq in {
-					6/0/-1/>/4/notwire/5/notwire,
-					7/2/-1/\lor/1/notwire/5/notwire}
-				{
-					\node[outgate] (\n) at (\x, \y) {};
-					\draw[\wp] (\p) -- (\n);
-					\draw[\wq] (\q) -- (\n);
-				}
-				%\node at (1, -2.5) {(b)};
-				
-				\node (c) at (2, -2) {\strut carry};
-				\node (s) at (0, -2) {\strut sum};
-				\draw[wire] (6) -- (s);
-				\draw[notwire] (7) -- (c);
-			\end{scope}
-		\end{tikzpicture}
-	\end{center}
-	\caption{A~circuit over the basis $B_2 \setminus \{\oplus, \equiv\}$ computing
-		$\operatorname{SUM}_3$ (left) and its AIG representation (right). The output gates are shown in~bold, whereas the negated wires are~shown dashed. The binary Boolean operation~$>$
-		is~defined in a~natural way: $a>b=a \land \overline{b}$.}
-	\label{fig:fulladderaig}
-\end{figure}
+
 
 \begin{figure*}%[!ht]
 	\begin{center}
@@ -537,7 +441,7 @@ See an~example in~Figure~\ref{fig:fulladderaig}.
 			\draw[->] (\x,1.5) -- (\x,1);
 			\foreach \x/\y in {5/3.5, 9/3.5, 13/3.5, 9/2}
 			\draw[->] (\x+0.15,\y) -- (\x+0.85,\y);
-			
+
 			\node[input] (w3) at (12,-2) {$w_3$};
 			\draw[->] (12,0) -- (w3);
 			\node[gate] (x) at (7,-1) {$>$};
