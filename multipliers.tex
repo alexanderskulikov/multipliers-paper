@@ -41,7 +41,7 @@
 \ccsdesc[500]{Hardware~Combinational synthesis}
 \ccsdesc[300]{Mathematics of computing~Combinatorial algorithms}
 
-\keywords{multiplier, multiplication, summation, Boolean, circuit, synthesis, combinational}
+\keywords{bit addition, summation, multiplier, multiplication, Boolean, circuit, synthesis, combinational, digital}
 
 \title{Smaller Circuits for Bit Addition}
 
@@ -71,20 +71,11 @@
 \maketitle
 
 \section{Overview}
-%The Full Adder and Half Adder
-%(abbreviated~as FA and HA and also known~as 3:2 and 2:2 compressors, respectively)
-%are used frequently when synthesizing Boolean circuits. They compute $\SUM_3$
-%and $\SUM_2$, respectively, where the function
-%\[\SUM_n \colon \{0,1\}^n \to \{0,1\}^l\]
-%gives the binary representation of~the sum of~$n$~input bits:
-%\[\SUM_n(x_1, \dotsc, x_n)=(s_0, \dotsc, s_{l-1}) \text{ such that } \sum_{i=1}^{n}x_i=\sum_{i=0}^{l-1}2^is_i,\]
-%where $l=\lceil \log_2(n+1) \rceil$.
-
 Bit addition arises virtually everywhere in~digital circuits:
 arithmetic operations,
 increment/decrement operators,
 computing addresses and table indices, and so~on.
-Three specific scenarios where it~is used are listed below.
+Three specific scenarios where it~is used frequently are listed below.
 \begin{itemize}
 	\item Adding two $n$-bit numbers.
 	\item Computing a~symmetric Boolean function
@@ -197,10 +188,11 @@ see Figure~\ref{figure:dot2}.
 \end{figure}
 
 A~function capturing all such scenarios is~known as~\emph{bit adder}
-$\BA_{k_0, k_1, \dotsc, k_r}$. It~takes $k_0+k_1+\dotsb+k_r$ input bits:
-$k_0$~bits of~significance~$0$, $k_1$~bits of~significance~$1$, and so~on.
-It~outputs~$m$ bits of~significance $0,\dotsc,m-1$ where $m$~is
-minimal such that $\sum_{i=0}^{r}k_i2^i \le 2^m-1$. This way, $\SUM_n=\BA_{0,0,\dotsc,0}$ and $\ADD_n=\BA_{0,0,1,1,\dotsc,n-1,n-1}$.
+$\BA_n^{s_1, \dotsc, s_n}$. It~is parameterized by~the \emph{significance vector}
+$s=(s_1, \dotsc, s_n)$, takes $n$~input bits $(x_1, \dotsc, x_n)$, and outputs
+the binary representation~of
+\[\sum_{i=1}^{n}2^{s_i}x_i.\]
+This way, $\SUM_n=\BA^{0,0,\dotsc,0}_n$ and $\ADD_n=\BA^{0,0,1,1,\dotsc,n-1,n-1}_{2n}$.
 
 Since bit addition is~such a~basic task in~Boolean circuit synthesis,
 a~lot of~research has been done on~constructing efficient circuits
@@ -333,6 +325,10 @@ We~complement our theoretical result by~an~open source implementation
 of~generators producing circuits for bit addition and multiplication.
 
 \section{General Setting}
+In~this section, we~provide formal definitions
+of~Boolean functions and the computational model
+studied in~this paper.
+
 For a~predicate~$P$, $[P]$ is~the Iverson bracket: $[P]=1$ if $P$~is true and $[P]=0$ otherwise. For a~non-negative integer~$q$,
 $\operatorname{bin}(q)$ is~the binary representation of~$q$
 (padded with a~number of~leading zeroes if~needed).
@@ -341,75 +337,45 @@ Conversely, for a~bit-string $b=(b_0,\dotsc, b_k)$, $\operatorname{int}(b)=\sum_
 \subsection{Boolean Functions}
 Let $B_{n,m}=\{f \colon \{0,1\}^n \to \{0,1\}^m\}$ be~the set of~all Boolean functions with $n$~inputs and $m$~outputs
 and let $B_n=B_{n,1}$ be the set of~all $n$-input single-output functions.
-A~function of the form $f \colon \{0,1\}^n \to \{0,1,*\}^m$
-is~called \emph{partially defined}: $*$ is~known~as \emph{don't care} symbol
-and means an~undefined Boolean value.
 
-Below, we~define a~number of~specific Boolean functions studied in~this paper.
-By $x=(x_1,\dotsc, x_n)$~and~$y=(y_1, \dotsc, y_n)$ we~denote input $n$-bit strings
-and $\operatorname{sum}(x)=x_1+\dotsb+x_n$.
-\begin{itemize}
-	\item $\operatorname{MAJ}_n \in B_n$ is~the majority function, that is, it~is equal to~$1$ if~and only~if more than half of~the $n$~input bits are~$1$'s:
-	\(\operatorname{MAJ}_n(x)=[\operatorname{sum}(x) > n/2].\)
-	\item $\operatorname{SUM}_n \in B_{n, \lceil \log_2(n+1) \rceil}$ computes the binary representation of~the sum of~$n$~input bits:
-	\(\operatorname{SUM}_n(x)=\operatorname{bin}(\operatorname{sum}(x)).\)
-	\item $\operatorname{SORT}_n \in B_{n,n}$ sorts the given $n$~bits:
-	\(\operatorname{SORT}_n(x)=(x_1', \dotsc, x_n'),\)
-	where $x_1' \le \dotsb \le x_n'$ and $\operatorname{sum}(x)=\operatorname{sum}(x')$.
-	\item $\operatorname{MULT}_n \in B_{2n, 2n}$ computes the product of~the given two~$n$-bit integers:
-	\(\operatorname{MULT}_n(x, y)=\operatorname{bin}(\operatorname{int}(x) \cdot \operatorname{int}(y)).\)
-	\item $\operatorname{SQR}_n \in B_{n, 2n}$ computes the square of~the given $n$-bit integer:
-	\(\operatorname{SQR}_n(x)=\operatorname{MULT}_n(x, x).\)
-	\item $\operatorname{SQRT}_n \in B_{n, n/2}$ computes the square root of~the given $n$-bit integer:
-	\(\operatorname{SQRT}_n(x)=\operatorname{bin}(\lfloor \sqrt{\operatorname{int}(x)}\rfloor).\)
-	\item $\operatorname{DIV}_n \in B_{2n, n}$ and $\operatorname{MOD}_n \in B_{2n, n}$
-	functions compute, respectively, the quotient and the remainder of~the first input integer divided by~the second input integer:
-	\begin{align*}
-		\operatorname{DIV}_n(x,y)&=\operatorname{bin}(\lfloor \operatorname{int}(x) /\operatorname{int(y)}\rfloor),\\
-		\operatorname{MOD}_n(x,y)&=\operatorname{bin}(\operatorname{int}(x) \bmod \operatorname{int(y)}).
-	\end{align*}
-\end{itemize}
+\todo[inline]{complete}
+
+
+%Below, we~define a~number of~specific Boolean functions studied in~this paper.
+%By $x=(x_1,\dotsc, x_n)$~and~$y=(y_1, \dotsc, y_n)$ we~denote input $n$-bit strings
+%and $\operatorname{sum}(x)=x_1+\dotsb+x_n$.
+%\begin{itemize}
+%	\item $\operatorname{MAJ}_n \in B_n$ is~the majority function, that is, it~is equal to~$1$ if~and only~if more than half of~the $n$~input bits are~$1$'s:
+%	\(\operatorname{MAJ}_n(x)=[\operatorname{sum}(x) > n/2].\)
+%	\item $\operatorname{SUM}_n \in B_{n, \lceil \log_2(n+1) \rceil}$ computes the binary representation of~the sum of~$n$~input bits:
+%	\(\operatorname{SUM}_n(x)=\operatorname{bin}(\operatorname{sum}(x)).\)
+%	\item $\operatorname{SORT}_n \in B_{n,n}$ sorts the given $n$~bits:
+%	\(\operatorname{SORT}_n(x)=(x_1', \dotsc, x_n'),\)
+%	where $x_1' \le \dotsb \le x_n'$ and $\operatorname{sum}(x)=\operatorname{sum}(x')$.
+%	\item $\operatorname{MULT}_n \in B_{2n, 2n}$ computes the product of~the given two~$n$-bit integers:
+%	\(\operatorname{MULT}_n(x, y)=\operatorname{bin}(\operatorname{int}(x) \cdot \operatorname{int}(y)).\)
+%	\item $\operatorname{SQR}_n \in B_{n, 2n}$ computes the square of~the given $n$-bit integer:
+%	\(\operatorname{SQR}_n(x)=\operatorname{MULT}_n(x, x).\)
+%	\item $\operatorname{SQRT}_n \in B_{n, n/2}$ computes the square root of~the given $n$-bit integer:
+%	\(\operatorname{SQRT}_n(x)=\operatorname{bin}(\lfloor \sqrt{\operatorname{int}(x)}\rfloor).\)
+%	\item $\operatorname{DIV}_n \in B_{2n, n}$ and $\operatorname{MOD}_n \in B_{2n, n}$
+%	functions compute, respectively, the quotient and the remainder of~the first input integer divided by~the second input integer:
+%	\begin{align*}
+%		\operatorname{DIV}_n(x,y)&=\operatorname{bin}(\lfloor \operatorname{int}(x) /\operatorname{int(y)}\rfloor),\\
+%		\operatorname{MOD}_n(x,y)&=\operatorname{bin}(\operatorname{int}(x) \bmod \operatorname{int(y)}).
+%	\end{align*}
+%\end{itemize}
 
 \subsection{Boolean Circuits}
 A~circuit is~a~natural way of~computing Boolean functions.
-It~is an~acyclic directed graph of in-degree at~most~$2$ whose $n$~source
+It~is an~acyclic directed graph of in-degree $0$~and~$2$ whose $n$~source
 nodes are labeled with input variables
 $x_1, \dotsc, x_n$ and all other nodes (called \emph{internal})
-are labeled with Boolean operations from
-$B_1 \cup B_2$ (that~is, unary and binary Boolean predicates).
+are labeled with Boolean operations from~$B_2$.
 The nodes of~the circuit are called \emph{gates} and each gate computes
 a~(single-output) Boolean function of~$x_1, \dotsc, x_n$. Thus, if~$m$ gates of the
 circuit are marked as~outputs, it~computes a~function from $B_{n,m}$.
-The size of a~circuit is~its number of~internal binary gates
-(it~is common to~assume that unary gates are given for free).
-
-Figure~\ref{fig:fulladder} shows an~example of~a~circuit of~size~$5$ computing
-$\operatorname{SUM}_3$. It~also highlights that a~circuit corresponds
-to~an~extremely simple program (called a~straight line program):
-every line of~this program just applies a~unary or~binary Boolean operation
-to~input bits or~the results of~the previous lines.
-
-We~assume that a~gate of~a~circuit can compute any unary or~binary Boolean function.
-It~is not difficult to~see that, for a~given Boolean function~$f$,
-the minimum size of a~circuit computing~$f$ is~equal
-to~the minimum size of a~circuit for~$f$
-when each gate computes either
-binary XOR ($\oplus$), binary AND ($\land$), or unary NOT ($\neg$):
-indeed, every binary Boolean operation is~either a~summation
-or a~multiplication with possibly negated inputs and outputs. For this reason,
-when all unary and binary operations are allowed, we~say that this is an~XAIG circuit:
-X~stands for XOR (summation),
-A~stands for AND (multiplication),
-I~stands for inverter (negation),
-and G~stands for a~graph.
-
-It~is~well known that any Boolean function can also be~computed
-by~a~circuit that only uses AND's and NOT's as~operations in~gates.
-They are called AIG circuits \cite{BiereHeljankoWieringa2011} and this is a~convenient format for representing
-a~circuit in~practice: since every binary gate computes an~AND, one just stores
-a~graph of~in-degree~$2$ (without storing the operations computed in~the gates)
-and a~list of~flags telling which of~the edges are negated (or~inverted).
-See an~example in~Figure~\ref{fig:fulladderaig}.
+The size of a~circuit is~its number of~internal binary gates.
 
 
 
@@ -454,6 +420,35 @@ See an~example in~Figure~\ref{fig:fulladderaig}.
 	\label{figure:sum17}
 \end{figure*}
 
+\section{New Upper Bound for Circuit Size of~Bit Addition}
+\begin{theorem}
+    For any vector $s \in \mathbb{Z}_{\ge 0}^n$,
+    \[\operatorname{size}(\BA_n^s) \le 5n-3m.\]
+\end{theorem}
+\begin{proof}
+    To~compute $\BA_n^s$, apply the following method (mentioned in~the introduction).
+    \begin{quote}
+        Process the bits layer by~layer, in~the order of~increasing significance.
+        While the current significance layer~$i$ contains at~least three bits,
+        take three of~them and apply~FA to~replace them with a~pair of~bits
+        of~significance $i$~and~$i+1$. If~there are two bits left at~the current layer~$i$, apply~HA to~them to~get a~pair of~bits of~significance $i$~and~$i+1$.
+    \end{quote}
+    Each application of a~Full Adder reduces the number of~bits by~one,
+    hence the total cost of~all Full Adders is~at~most $5(n-m)$. A~Half Adder is~applied at~most once for each of~the significance layers, hence
+    the total cost of~all Half Adders is~at~most~$2m$.
+\end{proof}
+
+Note that, for many vectors~$s$, the upper bound
+is~$\operatorname{size}(\BA_n^s) \le 5n-3m$ is~loose:
+it~does not match the size of~the actual circuit.
+A~straightforward example is $s=(0,1,\dotsc,n)$:
+in~this case, no~gates are needed whereas the upper bound is~$2n$.
+It~is also worth noting that, in~some cases, the resulting circuit
+is~\emph{provably} optimal. For example, for the $\ADD_n$ function,
+the method builds a~circuit out of a~single Half Adder and $(n-1)$
+Full Adders. The resulting circuit has size $5n-3$
+and Red'kin~\cite{Red81} proved that there~is no~smaller circuit
+for this function.
 
 
 \bibliographystyle{ACM-Reference-Format}
