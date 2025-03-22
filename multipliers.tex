@@ -6,7 +6,7 @@
 \usepackage{listings}
 
 \tikzstyle{dot}=[circle, fill=black, inner sep=0mm, minimum size=1mm]
-\tikzstyle{l}=[dotted, gray, thin]
+\tikzstyle{l}=[dotted, thin]
 \tikzstyle{input}=[draw=none, inner sep=.2mm]
 \tikzstyle{gate}=[draw, circle, inner sep=.2mm, minimum size=2mm]
 \tikzstyle{outgate}         = [gate, thick]
@@ -20,6 +20,7 @@
 \DeclareMathOperator{\ADD}{ADD}
 \DeclareMathOperator{\MULT}{MULT}
 \DeclareMathOperator{\BA}{BA}
+\DeclareMathOperator{\MDFA}{MDFA}
 
 \begin{document}
 
@@ -41,50 +42,38 @@
 \ccsdesc[500]{Hardware~Combinational synthesis}
 \ccsdesc[300]{Mathematics of computing~Combinatorial algorithms}
 
-\keywords{multiplier, multiplication, summation, Boolean, circuit, synthesis, combinational}
+\keywords{bit addition, summation, multiplier, multiplication, Boolean, circuit, synthesis, combinational, digital}
 
 \title{Smaller Circuits for Bit Addition}
 
-
-
-
 \begin{abstract}
-	The Full Adder and Half Adder are used frequently when synthesizing Boolean circuits.
-	For example, one can compute the binary representation of~the sum of~$n$~inputs bits
-	using at~most~$n$ Full and Half Adders. Also, a~circuit computing the sum of~two $n$-bit
-	numbers can be~composed out of~one Half Adder and $(n-1)$ Full Adders. Finally,
-	to~compute the product of~two $n$-bit numbers, one first computes $n^2$ partial products
-	and then adds them using about $n^2$ Full and Half Adders. Two natural strategies for
-	adding the partial products were presented by~Wallace and Dadda.
+    Bit addition arises virtually everywhere in~digital circuits:
+    arithmetic operations,
+    increment/decrement operators,
+    computing addresses and table indices, and so~on.
+    Since bit addition is~such a~basic task in~Boolean circuit synthesis,
+    a~lot of~research has been done on~constructing efficient circuits
+    for various special cases of~it. A~vast majority of~these results is~devoted to~optimizing the circuit \emph{depth} (also known as~delay).
 
-	In~this paper, we~study the size of~circuits composed out of~Full and Half Adders,
-	over the full binary basis. Interestingly, many such circuits are suboptimal:
-	for example, already the sum of~five input bits can be~computed more efficiently
-	than by~using two Full Adders and a~single Half Adder. We~show that, in~many interesting
-	regimes, circuits composed out of~Full and Half Adders, can be~made about 10\% smaller.
-	This applies to~Wallace and Dadda multipliers.
-	We~provide open source implementation of~generators producing efficient
-	circuits for summation and multiplication.\todo{I will update the abstract later}
+    In~this paper, we~investigate the circuit \emph{size} (also known as~area)
+    over the full binary basis of~bit addition. Though most of~the known circuits are built from Half Adders and Full Adders,
+    we~show that, in~many interesting scenarios, these circuits have suboptimal size
+    and can be~made about 10\% smaller. This applies to~a~wide range
+    of~circuits computing various arithmetic operations.
+    We~complement our theoretical result by~an~open source implementation
+    of~generators producing circuits for bit addition and multiplication.
 \end{abstract}
+
 
 
 \maketitle
 
 \section{Overview}
-%The Full Adder and Half Adder
-%(abbreviated~as FA and HA and also known~as 3:2 and 2:2 compressors, respectively)
-%are used frequently when synthesizing Boolean circuits. They compute $\SUM_3$
-%and $\SUM_2$, respectively, where the function
-%\[\SUM_n \colon \{0,1\}^n \to \{0,1\}^l\]
-%gives the binary representation of~the sum of~$n$~input bits:
-%\[\SUM_n(x_1, \dotsc, x_n)=(s_0, \dotsc, s_{l-1}) \text{ such that } \sum_{i=1}^{n}x_i=\sum_{i=0}^{l-1}2^is_i,\]
-%where $l=\lceil \log_2(n+1) \rceil$.
-
 Bit addition arises virtually everywhere in~digital circuits:
 arithmetic operations,
 increment/decrement operators,
 computing addresses and table indices, and so~on.
-Three specific scenarios where it~is used are listed below.
+Three specific scenarios where it~is used frequently are listed below.
 \begin{itemize}
 	\item Adding two $n$-bit numbers.
 	\item Computing a~symmetric Boolean function
@@ -99,46 +88,44 @@ Three specific scenarios where it~is used are listed below.
 \end{itemize}
 In~terms of~the dot-notation introduced by~Dadda~\cite{dadda}, the three scenarios discussed above are visualized as~shown in~Figure~\ref{figure:dot1}.
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
 	\begin{center}
 	    \begin{tikzpicture}
-	        %\draw[help lines] (0, -2) grid (8, 1);
-
 	        \begin{scope}[xshift=25mm]
+                \foreach \x [count=\n from 0] in {0} {
+                    \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+                    \node[below] at (\x * \d, -1) {$\n$};
+                }
+
 	            \foreach \y in {-2, ..., 2}
 	                \node[dot] at (0, \y * \d) {};
 	            \node at (0, -2) {$\SUM_5$};
-
-	            \foreach \x [count=\n from 0] in {0} {
-	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
-	                \node[gray, below] at (\x * \d, -1) {$\n$};
-	            }
 	        \end{scope}
 
 	        \begin{scope}[xshift=0mm]
+                \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
+                    \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+                    \node[below] at (\x * \d, -1) {$\n$};
+                }
+
 	            \foreach \x in {-2, ..., 2} {
-	                \node[dot] at (\x * \d, \d / 2) {};
-	                \node[dot] at (\x * \d, - \d / 2) {};
+	                \node[dot] at (\x * \d, - 2 * \d) {};
+	                \node[dot] at (\x * \d, - \d) {};
 	            }
 	            \node at (0, -2) {$\ADD_5$};
-
-	            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
-	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
-	                \node[gray, below] at (\x * \d, -1) {$\n$};
-	            }
 	        \end{scope}
 
 	        \begin{scope}[xshift=55mm]
+	            \foreach \x [count=\n from 0] in {4, 3, ..., -4} {
+                    \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+                    \node[below] at (\x * \d, -1) {$\n$};
+                }
+
 	            \foreach \y in {-2, ..., 2}
 	                \foreach \x in {-2, ..., 2} {
 	                    \node[dot] at (\x * \d + \y * \d, \y * \d) {};
 	            }
 	            \node at (0, -2) {$\MULT_5$};
-
-	            \foreach \x [count=\n from 0] in {4, 3, ..., -4} {
-	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
-	                \node[gray, below] at (\x * \d, -1) {$\n$};
-	            }
 	        \end{scope}
 	    \end{tikzpicture}
 	\end{center}
@@ -153,42 +140,42 @@ is a~special case),
 or~to~add three $n$-bit numbers, or~to~add a~few bits of~varying significance,
 see Figure~\ref{figure:dot2}.
 
-\begin{figure}[!ht]
+\begin{figure}[ht]
 	\begin{center}
 	    \begin{tikzpicture}
 	        \begin{scope}
-	            \foreach \x in {-2, ..., 2}
-	                \node[dot] at (\x * \d, - \d / 2) {};
-	            \node[dot] at (2 * \d, \d / 2) {};
-
 	            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
-	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
-	                \node[gray, below] at (\x * \d, -1) {$\n$};
-	            }
+                    \draw[l] (\x * \d, -1) -- (\x * \d, .5);
+                    \node[below] at (\x * \d, -1) {$\n$};
+                }
+
+	            \foreach \x in {-2, ..., 2}
+	                \node[dot] at (\x * \d, - 2 * \d) {};
+	            \node[dot] at (2 * \d, -\d) {};
 	        \end{scope}
 
 
 	        \begin{scope}[xshift=30mm]
+	            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
+                    \draw[l] (\x * \d, -1) -- (\x * \d, .5);
+                    \node[below] at (\x * \d, -1) {$\n$};
+                }
+
 	            \foreach \x in {-2, ..., 2} {
-	                \node[dot] at (\x * \d, \d) {};
 	                \node[dot] at (\x * \d, 0) {};
 	                \node[dot] at (\x * \d, -\d) {};
-	            }
-
-	            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
-	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
-	                \node[gray, below] at (\x * \d, -1) {$\n$};
+	                \node[dot] at (\x * \d, -2 * \d) {};
 	            }
 	        \end{scope}
 
 	        \begin{scope}[xshift=60mm]
-	            \foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 1/-1, 1/0, 2/-1}
-	                \node[dot] at (\x * \d, \y * \d) {};
-
 	            \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
-	                \draw[l] (\x * \d, -1) -- (\x * \d, 1);
-	                \node[gray, below] at (\x * \d, -1) {$\n$};
-	            }
+                    \draw[l] (\x * \d, -1) -- (\x * \d, .5);
+                    \node[below] at (\x * \d, -1) {$\n$};
+                }
+
+	            \foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 1/-1, 1/0, 2/-1}
+	                \node[dot] at (\x * \d, \y * \d - \d) {};
 	        \end{scope}
 	    \end{tikzpicture}
 	\end{center}
@@ -197,15 +184,52 @@ see Figure~\ref{figure:dot2}.
 \end{figure}
 
 A~function capturing all such scenarios is~known as~\emph{bit adder}
-$\BA_{k_0, k_1, \dotsc, k_r}$. It~takes $k_0+k_1+\dotsb+k_r$ input bits:
-$k_0$~bits of~significance~$0$, $k_1$~bits of~significance~$1$, and so~on.
-It~outputs~$m$ bits of~significance $0,\dotsc,m-1$ where $m$~is
-minimal such that $\sum_{i=0}^{r}k_i2^i \le 2^m-1$. This way, $\SUM_n=\BA_{0,0,\dotsc,0}$ and $\ADD_n=\BA_{0,0,1,1,\dotsc,n-1,n-1}$.
+$\BA_n^{s_1, \dotsc, s_n} \colon \{0,1\}^n \to \{0,1\}^m$. It~is parameterized by~the \emph{significance vector}
+$s=(s_1, \dotsc, s_n)$, takes $n$~input bits $(x_1, \dotsc, x_n)$, and outputs
+the binary representation~of
+\[\sum_{i=1}^{n}2^{s_i}x_i.\]
+The number~$m$ of~outputs of $\BA$ is~determined by~its significance vector:
+\[m=\left\lceil \log_2\left( \sum_{i=1}^{n}2^{s_i} + 1\right) \right\rceil.\]
+This way, $\SUM_n=\BA^{0,0,\dotsc,0}_n$ and $\ADD_n=\BA^{0,0,1,1,\dotsc,n-1,n-1}_{2n}$.
+In~dot notation, the goal of~bit addition is~to~``flatten''
+the distribution of~bits, that~is, to~leave one bit at~each significance layer.
+Figure~\ref{figure:baexample} gives an~example.
+
+\begin{figure}[ht]
+	\begin{center}
+		\begin{tikzpicture}
+			\begin{scope}
+				\foreach \x [count=\n from 0] in {2, 1, ..., -2} {
+					\draw[l] (\x * \d, -1) -- (\x * \d, .5);
+					\node[below] at (\x * \d, -1) {$\n$};
+				}
+				
+				\foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 1/-1, 1/0, 2/-1}
+				\node[dot] at (\x * \d, \y * \d - \d) {};
+			\end{scope}
+			
+			\draw[dashed, ->] (1.5, -\d) -- (2.5, -\d);
+			
+			\begin{scope}[xshift=40mm]
+				\foreach \x [count=\n from 0] in {3, 2, ..., -2} {
+					\draw[l] (\x * \d, -1) -- (\x * \d, .5);
+					\node[below] at (\x * \d, -1) {$\n$};
+					\node[dot] at (\x * \d, -2 * \d) {};
+				}
+			\end{scope}
+		\end{tikzpicture}
+	\end{center}
+	\caption{The function $\BA_7^{0,1,1,3,3,3,4} \colon \{0,1\}^7 \to \{0,1\}^6$ replaces seven bits of~significance $(0,1,1,3,3,3,4)$ with six bits of~significance $(0,1,2,3,4,5)$.}
+	\label{figure:baexample}
+\end{figure}
 
 Since bit addition is~such a~basic task in~Boolean circuit synthesis,
 a~lot of~research has been done on~constructing efficient circuits
-for various special cases of~it, see~\cite{DBLP:journals/cc/PatersonZ93}
-and references therein.\todo{add more references}
+for various special cases of~it, see, for example,
+\cite{DBLP:journals/cc/PatersonZ93,
+    DBLP:conf/arith/MartelORS95,
+    DBLP:journals/tc/StellingMOR98,
+    DBLP:conf/arith/BickerstaffSS01}.
 A~vast majority of~these results is~devoted to~optimizing the circuit \emph{depth} (also known as~delay).
 In~this paper, we~investigate the circuit \emph{size} (also known as~area) of~bit addition. Specifically, we~study circuits over the full binary basis.
 
@@ -214,56 +238,105 @@ and Full Adder~(FA). They compute the binary representation of~the sum
 of~two and three bits, respectively (that~is, $\SUM_2$ and $\SUM_3$).
 In~the full binary basis, they can be~implemented in~two and five gates, respectively, see Figure~\ref{figure:sum23}.
 
-\begin{figure}[!ht]
-	\begin{center}
-		\begin{tikzpicture}[label distance=-.9mm, scale=.7]
-			\foreach \n/\x/\y in {1/0/1, 2/1/1}
-				\node[input] (x\n) at (\x, \y) {$x_{\n}$};
-			\node[gate, label=left:$w_1$] (g1) at (0,0) {$\land$};
-			\node[gate, label=right:$w_0$] (g2) at (1,0) {$\oplus$};
-			\foreach \f/\t in {x1/g1, x1/g2, x2/g1, x2/g2}
-				\draw[->] (\f) -- (\t);
+\begin{figure}[ht]
+    \begin{center}
+        \begin{tikzpicture}
+            \begin{scope}[label distance=-.9mm, scale=.7]
+                \foreach \n/\x/\y in {1/0/1, 2/1/1}
+                \node[input] (x\n) at (\x, \y) {$x_{\n}$};
+                \node[gate, label=left:$w_1$] (g1) at (0,0) {$\land$};
+                \node[gate, label=right:$w_0$] (g2) at (1,0) {$\oplus$};
+                \foreach \f/\t in {x1/g1, x1/g2, x2/g1, x2/g2}
+                \draw[->] (\f) -- (\t);
 
-			\begin{scope}[yshift=-45mm, xshift=-5mm]
-				\foreach \n/\x/\y in {1/0/3, 2/1/3, 3/2/3}
-					\node[input] (x\n) at (\x, \y) {$x_{\n}$};
-				\node[gate,label=left:$a$] (g1) at (0.5,2) {$\oplus$};
-				\node[gate,label=left:$b$] (g2) at (1.5,2) {$\oplus$};
-				\node[gate,label=left:$c$] (g3) at (0.5,1) {$\lor$};
-				\node[gate, label=right:$w_0$] (g4) at (1.5,1) {$\oplus$};
-				\node[gate, label=right:$w_1$] (g5) at (0.5,0) {$\oplus$};
-				\foreach \f/\t in {x1/g1, x2/g1, x2/g2, x3/g2, g1/g3, g2/g3, g1/g4, g3/g5, g4/g5}
-					\draw[->] (\f) -- (\t);
-				\path (x3) edge[bend left,->] (g4);
-			\end{scope}
-			
-			\begin{scope}[xshift=-50mm, yshift=10mm]
-				\draw[l] (0, -1) -- (0, 0.5); \node[below, gray] at (0, -1) {$i$};
-				\node[dot, label=left:$x_1$] at (0, -0.5) {};
-				\node[dot, label=left:$x_2$] at (0, 0) {};
-				
-				\draw[gray, dashed, ->] (0.25, -.25) -- (0.75, -.25);
-				
-				\draw[l] (2, -1) -- (2, 0.5); \node[below, gray] at (2, -1) {$i$};
-				\draw[l] (1.5, -1) -- (1.5, .5); \node[below, gray] at (1.5, -1) {$i+1$};
-				\node[dot, label=left:$w_1$] at (1.5, -0.5) {};
-				\node[dot, label=right:$w_0$] at (2, -0.5) {};
-			\end{scope}
-		\end{tikzpicture}
-	\end{center}
-	\caption{The Half Adder and Full Adder in~the full binary basis.}
-	\label{figure:sum23}
+                \begin{scope}[yshift=-45mm, xshift=-5mm]
+                    \foreach \n/\x/\y in {1/0/3, 2/1/3, 3/2/3}
+                    \node[input] (x\n) at (\x, \y) {$x_{\n}$};
+                    \node[gate,label=left:$a$] (g1) at (0.5,2) {$\oplus$};
+                    \node[gate,label=left:$b$] (g2) at (1.5,2) {$\oplus$};
+                    \node[gate,label=left:$c$] (g3) at (0.5,1) {$\lor$};
+                    \node[gate, label=right:$w_0$] (g4) at (1.5,1) {$\oplus$};
+                    \node[gate, label=right:$w_1$] (g5) at (0.5,0) {$\oplus$};
+                    \foreach \f/\t in {x1/g1, x2/g1, x2/g2, x3/g2, g1/g3, g2/g3, g1/g4, g3/g5, g4/g5}
+                    \draw[->] (\f) -- (\t);
+                    \path (x3) edge[bend left,->] (g4);
+                \end{scope}
+            \end{scope}
+
+            \begin{scope}[xshift=-40mm, yshift=10mm]
+                \draw[l] (0, -1) -- (0, 0.5); \node[below] at (0, -1) {$i$};
+                \node[dot, label=left:$x_1$] at (0, -0.5) {};
+                \node[dot, label=left:$x_2$] at (0, 0) {};
+
+                \draw[dashed, ->] (0.25, -.25) -- (0.75, -.25);
+
+                \draw[l] (2, -1) -- (2, 0.5); \node[below] at (2, -1) {$i$};
+                \draw[l] (1.5, -1) -- (1.5, .5); \node[below] at (1.5, -1) {$i+1$};
+                \node[dot, label=left:$w_1$] at (1.5, -0.5) {};
+                \node[dot, label=right:$w_0$] at (2, -0.5) {};
+            \end{scope}
+
+            \begin{scope}[xshift=-40mm, yshift=-20mm]
+                \draw[l] (0, -1) -- (0, 0.5); \node[below, gray] at (0, -1) {$i$};
+                \node[dot, label=left:$x_1$] at (0, -0.75) {};
+                \node[dot, label=left:$x_2$] at (0, -0.25) {};
+                \node[dot, label=left:$x_3$] at (0, 0.25) {};
+
+                \draw[dashed, ->] (0.25, -.25) -- (0.75, -.25);
+
+                \draw[l] (2, -1) -- (2, 0.5); \node[below] at (2, -1) {$i$};
+                \draw[l] (1.5, -1) -- (1.5, .5); \node[below] at (1.5, -1) {$i+1$};
+                \node[dot, label=left:$w_1$] at (1.5, -0.75) {};
+                \node[dot, label=right:$w_0$] at (2, -0.75) {};
+            \end{scope}
+        \end{tikzpicture}
+    \end{center}
+    \caption{The Half Adder (top) and Full Adder (bottom): dot diagrams and circuits.}
+    \label{figure:sum23}
 \end{figure}
+
 
 Using Half Adders and Full Adders, one can synthesize a~bit adder using the following algorithm that goes back to~Napier's \emph{Rabdologiæ} (1617),
 as~modernized by~Dadda~\cite{dadda}.
 \begin{quote}
 	Process the bits layer by~layer, in~the order of~increasing significance.
 	While the current significance layer~$i$ contains at~least three bits,
-	take three of~them and apply~FA to~replace them with a~pair of~bits
-	of~significance $i$~and~$i+1$. If~there are two bits left at~the current layer~$i$, apply~HA to~them to~get a~pair of~bits of~significance $i$~and~$i+1$.
+	take three of~them and apply the Full Adder to~replace them with a~pair of~bits
+	of~significance $i$~and~$i+1$. If~there are two bits left at~the current layer~$i$, apply the Half Adder to~them to~get a~pair of~bits of~significance $i$~and~$i+1$.
 \end{quote}
-For example, by~applying this algorithm, one can compute $\SUM_5$ using two FA's and one HA. This results in a~circuit of~size~$12$, see Figure~\ref{figure:sumfive}. Also, by~applying this algorithm to~partial products of~bits of~two input $n$-bit numbers, one gets the well-known Dadda multiplier circuit~\cite{dadda}.
+This algorithm ensures that, for any vector $s \in \mathbb{Z}_{\ge 0}^n$,
+\[\operatorname{size}(\BA_n^s) \le 5n-3m.\]
+Indeed, each application of a~Full Adder reduces the number of~bits by~one,
+hence the total cost of~all Full Adders is~at~most $5(n-m)$. A~Half Adder is~applied at~most once for each of~the significance layers, hence
+the total cost of~all Half Adders is~at~most~$2m$. Hence, the total size
+is~at~most $5(n-m)+2m=5n-3m$.
+
+By~applying this algorithm to~partial products of~bits of~two input $n$-bit numbers, one gets the well-known Dadda multiplier circuit~\cite{dadda}.
+For many vectors~$s$, the upper bound
+$5n-3m$ is~loose:
+it~does not match the size of~the actual circuit
+produced by~the algorithm.
+A~straightforward example is $s=(0,1,\dotsc,n)$:
+in~this case, no~gates are needed whereas the upper bound is~$2n$.
+It~is also worth noting that, in~some cases, the resulting circuit
+is~\emph{provably} optimal.
+For example, for the $\ADD_n$ function (that computes the sum of~two $n$-bit integers),
+the method constructs a~circuit out of a~single Half Adder and $(n-1)$
+Full Adders. The resulting circuit is~known as~\emph{ripple-carry adder} and has size $5n-3$.
+Red'kin~\cite{Red81} proved that there~is no~smaller circuit
+for this function.
+
+At~the same time, in~many scenarios,
+not only the bound $5n-3m$ is~loose,
+but also the circuit produced by~the algorithm
+is~suboptimal.
+For example, for $\SUM_5$, it~gives a~circuit of~size~$12$ consisting
+of~two Full Adders and one Half Adder, see Figure~\ref{figure:sumfive}.
+However, $\SUM_5$
+can be~computed by a~circuit of~size~$11$ as~shown by~\cite{DBLP:conf/mfcs/KulikovPS22} (see also Figure~\ref{figure:mdfa} later in~the text).
+In~general, whereas the algorithm produces a~circuit of~size about~$5n$
+for $\SUM_n$, this function can be~computed by~a~circuit of~size about $4.5n$
+as~shown by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
 
 \begin{figure}[!ht]
 	\begin{tikzpicture}
@@ -324,107 +397,133 @@ For example, by~applying this algorithm, one can compute $\SUM_5$ using two FA's
 	\label{figure:sumfive}
 \end{figure}
 
-Interestingly, in~some regimes, this algorithm leads to~a~circuit
-that is~\emph{provably} optimal. For example, it~adds two $n$-bit
-numbers using a~single Half Adder and $n-1$ Full Adders. The resulting
-circuit is~known as~\emph{ripple-carry adder} and has size $2+5(n-1)=5n-3$. Red'kin~\cite{Red81} proved
-that there~is no~smaller circuit for this function.
-At~the same time, in~various other scenarios, the algorithm leads
-to~a~suboptimal circuit. For example, the circuit from Figure~\ref{figure:sumfive} is~suboptimal as~$\SUM_5$
-can be~computed by a~circuit of~size~$11$ (see~\cite{DBLP:conf/mfcs/KulikovPS22}).
-In~general, whereas the algorithm produces a~circuit of~size about~$5n$
-for $\SUM_5$, this function can be~computed by~a~circuit of~size about $4.5n$
-as~shown by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
 
 In~this paper, we~generalize the construction by~Demenkov et~al.
-Namely, we~show that whereas the algorithm described above produces
-a~circuit of~size at~most $5n-3m$ computing $\BA$, one can construct
-a~circuit of~size at~most $4.5n-m$. In~the regimes where $m$~is~small
+Namely, we~prove an~upper bound $4.5n-m$
+for the circuit size of~bit addition.
+In~the regimes where $m$~is~small
 compared to~$n$, this gives a~circuit that is~about $10\%$ smaller.
 This applies to~the Dadda multiplier.
 We~complement our theoretical result by~an~open source implementation
 of~generators producing circuits for bit addition and multiplication.
 
 \section{General Setting}
-For a~predicate~$P$, $[P]$ is~the Iverson bracket: $[P]=1$ if $P$~is true and $[P]=0$ otherwise. For a~non-negative integer~$q$,
-$\operatorname{bin}(q)$ is~the binary representation of~$q$
-(padded with a~number of~leading zeroes if~needed).
-Conversely, for a~bit-string $b=(b_0,\dotsc, b_k)$, $\operatorname{int}(b)=\sum_{i=0}^{k}2^ib_i$ is~the corresponding integer.
+In~this section, we~provide formal definitions
+of~Boolean functions and the computational model
+studied in~this paper.
+
+%For a~predicate~$P$, $[P]$ is~the Iverson bracket: $[P]=1$ if $P$~is true and $[P]=0$ otherwise. For a~non-negative integer~$q$,
+%$\operatorname{bin}(q)$ is~the binary representation of~$q$
+%(padded with a~number of~leading zeroes if~needed).
+%Conversely, for a~bit-string $b=(b_0,\dotsc, b_k)$, $\operatorname{int}(b)=\sum_{i=0}^{k}2^ib_i$ is~the corresponding integer.
 
 \subsection{Boolean Functions}
 Let $B_{n,m}=\{f \colon \{0,1\}^n \to \{0,1\}^m\}$ be~the set of~all Boolean functions with $n$~inputs and $m$~outputs
 and let $B_n=B_{n,1}$ be the set of~all $n$-input single-output functions.
-A~function of the form $f \colon \{0,1\}^n \to \{0,1,*\}^m$
-is~called \emph{partially defined}: $*$ is~known~as \emph{don't care} symbol
-and means an~undefined Boolean value.
 
-Below, we~define a~number of~specific Boolean functions studied in~this paper.
-By $x=(x_1,\dotsc, x_n)$~and~$y=(y_1, \dotsc, y_n)$ we~denote input $n$-bit strings
-and $\operatorname{sum}(x)=x_1+\dotsb+x_n$.
-\begin{itemize}
-	\item $\operatorname{MAJ}_n \in B_n$ is~the majority function, that is, it~is equal to~$1$ if~and only~if more than half of~the $n$~input bits are~$1$'s:
-	\(\operatorname{MAJ}_n(x)=[\operatorname{sum}(x) > n/2].\)
-	\item $\operatorname{SUM}_n \in B_{n, \lceil \log_2(n+1) \rceil}$ computes the binary representation of~the sum of~$n$~input bits:
-	\(\operatorname{SUM}_n(x)=\operatorname{bin}(\operatorname{sum}(x)).\)
-	\item $\operatorname{SORT}_n \in B_{n,n}$ sorts the given $n$~bits:
-	\(\operatorname{SORT}_n(x)=(x_1', \dotsc, x_n'),\)
-	where $x_1' \le \dotsb \le x_n'$ and $\operatorname{sum}(x)=\operatorname{sum}(x')$.
-	\item $\operatorname{MULT}_n \in B_{2n, 2n}$ computes the product of~the given two~$n$-bit integers:
-	\(\operatorname{MULT}_n(x, y)=\operatorname{bin}(\operatorname{int}(x) \cdot \operatorname{int}(y)).\)
-	\item $\operatorname{SQR}_n \in B_{n, 2n}$ computes the square of~the given $n$-bit integer:
-	\(\operatorname{SQR}_n(x)=\operatorname{MULT}_n(x, x).\)
-	\item $\operatorname{SQRT}_n \in B_{n, n/2}$ computes the square root of~the given $n$-bit integer:
-	\(\operatorname{SQRT}_n(x)=\operatorname{bin}(\lfloor \sqrt{\operatorname{int}(x)}\rfloor).\)
-	\item $\operatorname{DIV}_n \in B_{2n, n}$ and $\operatorname{MOD}_n \in B_{2n, n}$
-	functions compute, respectively, the quotient and the remainder of~the first input integer divided by~the second input integer:
-	\begin{align*}
-		\operatorname{DIV}_n(x,y)&=\operatorname{bin}(\lfloor \operatorname{int}(x) /\operatorname{int(y)}\rfloor),\\
-		\operatorname{MOD}_n(x,y)&=\operatorname{bin}(\operatorname{int}(x) \bmod \operatorname{int(y)}).
-	\end{align*}
-\end{itemize}
+\todo[inline]{introduce various functions here}
 
 \subsection{Boolean Circuits}
 A~circuit is~a~natural way of~computing Boolean functions.
-It~is an~acyclic directed graph of in-degree at~most~$2$ whose $n$~source
+It~is an~acyclic directed graph of in-degree $0$~and~$2$ whose $n$~source
 nodes are labeled with input variables
 $x_1, \dotsc, x_n$ and all other nodes (called \emph{internal})
-are labeled with Boolean operations from
-$B_1 \cup B_2$ (that~is, unary and binary Boolean predicates).
+are labeled with Boolean operations from~$B_2$.
 The nodes of~the circuit are called \emph{gates} and each gate computes
 a~(single-output) Boolean function of~$x_1, \dotsc, x_n$. Thus, if~$m$ gates of the
 circuit are marked as~outputs, it~computes a~function from $B_{n,m}$.
-The size of a~circuit is~its number of~internal binary gates
-(it~is common to~assume that unary gates are given for free).
+The size of a~circuit is~its number of~internal gates.
 
-Figure~\ref{fig:fulladder} shows an~example of~a~circuit of~size~$5$ computing
-$\operatorname{SUM}_3$. It~also highlights that a~circuit corresponds
-to~an~extremely simple program (called a~straight line program):
-every line of~this program just applies a~unary or~binary Boolean operation
-to~input bits or~the results of~the previous lines.
+\subsection{Basic Building Blocks}
+As~discussed before, the Half Adder and Full Adder are basic building
+blocks for computing bit addition. Here, we~describe another block, called MDFA
+introduced by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
 
-We~assume that a~gate of~a~circuit can compute any unary or~binary Boolean function.
-It~is not difficult to~see that, for a~given Boolean function~$f$,
-the minimum size of a~circuit computing~$f$ is~equal
-to~the minimum size of a~circuit for~$f$
-when each gate computes either
-binary XOR ($\oplus$), binary AND ($\land$), or unary NOT ($\neg$):
-indeed, every binary Boolean operation is~either a~summation
-or a~multiplication with possibly negated inputs and outputs. For this reason,
-when all unary and binary operations are allowed, we~say that this is an~XAIG circuit:
-X~stands for XOR (summation),
-A~stands for AND (multiplication),
-I~stands for inverter (negation),
-and G~stands for a~graph.
+Consider two consecutive Full Adders shown on~the top left of~Figure~\ref{figure:mdfa}. The corresponding function DFA (for Double Full Adder) has the following specification: \[\operatorname{DFA}(x_1, x_2,\dotsc,x_5)=(b_0,b_1,a_1) \colon x_1+\dotsb+x_5=b_0+2(b_1+a_1).\]
+Then, MDFA (for Modified Double Full Adder) has the following specification:
+\[\MDFA(x_1 \oplus x_2, x_2, x_3, x_4, x_4 \oplus x_5)=(b_0, a_1, a_1 \oplus b_1).\]
+That~is, for pairs of~bits $(x_1, x_2)$, $(x_4, x_5)$, and $(a_1, b_1)$
+it~uses a~slightly different encoding: $(p, p \oplus q)$ instead of~$(p,q)$.
+It~allows one to~compute MDFA in~eight gates (whereas the circuit size of~DFA is~10). Moreover, the corresponding circuit of~size~eight is~just a~part
+of~an~optimal circuit of~size~$11$ computing~$\SUM_5$ shown on~the right
+of~Figure~\ref{figure:mdfa}.
 
-It~is~well known that any Boolean function can also be~computed
-by~a~circuit that only uses AND's and NOT's as~operations in~gates.
-They are called AIG circuits \cite{BiereHeljankoWieringa2011} and this is a~convenient format for representing
-a~circuit in~practice: since every binary gate computes an~AND, one just stores
-a~graph of~in-degree~$2$ (without storing the operations computed in~the gates)
-and a~list of~flags telling which of~the edges are negated (or~inverted).
-See an~example in~Figure~\ref{fig:fulladderaig}.
+\begin{figure}[ht]
+    \begin{center}
+        \begin{tikzpicture}[scale=.7]
+            \begin{scope}[scale=.7]
+                %\draw[help lines] (0,0) grid (10,6);
+                \draw (1,0) rectangle (3,2); \node at (2,1) {FA};
+                \draw (5,0) rectangle (7,2); \node at (6,1) {FA};
+                \foreach \n/\x/\y in {3/0/1, 2/1.5/3, 1/2.5/3, 4/5.5/3, 5/6.5/3}
+                \node[input] (\n) at (\x,\y) {$x_{\n}$};
+                \foreach \n/\t/\x/\y in {a1/a_1/2/-1, b1/b_1/6/-1, b0/b_0/8/1}
+                \node[input] (\n) at (\x,\y) {$\t$};
+                \draw[->] (3)--(1,1);
+                \draw[->] (2)--(1.5,2);
+                \draw[->] (1)--(2.5,2);
+                \draw[->] (4)--(5.5,2);
+                \draw[->] (5)--(6.5,2);
+                \draw[->] (3,1)--(5,1);
+                \draw[->] (7,1)--(b0);
+                \draw[->] (2,0)--(a1);
+                \draw[->] (6,0)--(b1);
+            \end{scope}
+
+            \begin{scope}[scale=.7,yshift=-60mm]
+                %\draw[help lines] (0,0) grid (10,6);
+                \draw (1,0) rectangle (7,2); \node at (4,1) {MDFA};
+                \foreach \n/\x/\y in {3/0/1, 2/1.5/4, 1/2.5/4, 4/5.5/4, 5/6.5/4}
+                \node[input] (\n) at (\x,\y) {$x_{\n}$};
+                \node[gate] (xor1) at (2.5,3) {$\oplus$};
+                \node[gate] (xor2) at (6.5,3) {$\oplus$};
+                \foreach \n/\t/\x/\y in {a1/a_1/2/-1, b1/{a_1 \oplus b_1}/6/-1, b0/b_0/8/1}
+                \node[input] (\n) at (\x,\y) {$\t$};
+                \draw[->] (3)--(1,1);
+                \draw[->] (2)--(1.5,2);
+                \draw[->] (1) -- (xor1); \draw[->] (2) -- (xor1);
+                \draw[->] (xor1) -- (2.5,2);
+                \draw[->] (4)--(5.5,2);
+                \draw[->] (5)-- (xor2); \draw[->] (xor2) -- (6.5,2); \draw[->] (4) -- (xor2);
+                %\draw[->] (3,1)--(5,1);
+                \draw[->] (7,1)--(b0);
+                \draw[->] (2,0)--(a1);
+                \draw[->] (6,0)--(b1);
+            \end{scope}
+
+            \begin{scope}[yscale=.8, xshift=70mm, yshift=-20mm]
+                %\draw[help lines] (0,-3) grid (4,4);
+                \draw[draw=none, rounded corners=0,fill=gray!20] (0,1.5)--(1,1.5)--(1,2.5)--(2,2.5)--(2,0.5)--(2.5,0.5)--(2.5,-0.5)--(3.5,-0.5)--
+                (3.5,-2.5)--(0,-2.5)--(0,1.5);
 
 
+                \foreach \n/\x/\y in {1/0/3, 2/1/3, 3/2/3, 4/2.5/1, 5/3.5/1}
+                \node[input] (x\n) at (\x, \y) {$x_{\n}$};
+                \node[gate] (g1) at (0.5,2) {$\oplus$};
+                \node[gate] (g2) at (1.5,2) {$\oplus$};
+                \node[gate] (g3) at (0.5,1) {$\lor$};
+                \node[gate] (g4) at (1.5,1) {$\oplus$};
+                \node[gate, label=left:$a_1$] (g5) at (0.5,0) {$\oplus$};
+                \node[gate] (g6) at (2,0) {$\oplus$};
+                \node[gate] (g7) at (3,0) {$\oplus$};
+                \node[gate] (g8) at (2,-1) {$>$};
+                \node[gate, label=right:$b_0$] (g9) at (3,-1) {$\oplus$};
+                \node[gate, label=right:$a_1 \oplus b_1$] (g10) at (2,-2) {$\oplus$};
+                \node[gate] (g11) at (1.5,-3) {$>$};
+
+                \foreach \f/\t in {x1/g1, x2/g1, x2/g2, x3/g2, g1/g3, g2/g3, g1/g4, g3/g5, g4/g5, x4/g6, g4/g6, x4/g7, x5/g7, g6/g8, g7/g8, g7/g9, g3/g10, g8/g10, g10/g11, g5/g11}
+                \draw[->] (\f) -- (\t);
+
+                \path (x3) edge[->,bend left] (g4);
+                \path (g4) edge[->,bend left=20] (g9);
+            \end{scope}
+        \end{tikzpicture}
+    \end{center}
+    \caption{Two consecutive Full Adders (top left), the MDFA block (bottom left), and an~optimal circuit for $\SUM_5$ (right) whose highlighted part computes~MDFA.}
+    \label{figure:mdfa}
+\end{figure}
+
+\todo[inline]{explain how MDFA can be used to compute SUM}
 
 \begin{figure*}%[!ht]
 	\begin{center}
@@ -466,6 +565,80 @@ See an~example in~Figure~\ref{fig:fulladderaig}.
 	\caption{A~circuit computing $\SUM_{17}$ composed out of~MDFA blocks.}
 	\label{figure:sum17}
 \end{figure*}
+
+\section{New Upper Bound for Circuit Size of~Bit Addition}
+In~this section, we~prove a~new upper bound $4.5-m$ for the circuit size
+of~bit addition. For regimes where $m$~is small compared to~$n$, this~is
+better than $5n-3m$ by~about $10\%$. This applies to~multipliers and $\SUM_n$.
+\begin{theorem}
+    For any vector $s \in \mathbb{Z}_{\ge 0}^n$,
+    \[\operatorname{size}(\BA_n^s) \le 4.5n-m.\]
+\end{theorem}
+\begin{proof}
+Before we move to the prove exactly, let's think what constant \(d\) we can choose for 
+    \[\operatorname{size}(\BA_n^s) \le 4.5n-md?\]
+
+First, consider a simple example to obtain initial bounds for the factor \( d \). Suppose we have $\BA^{0,0,1,2\dotsc,n - 1}_{n + 1}$. Such a scenario yields \( m = n + 1 \). The number of required input gates is at least \( 2n \), because we must use at least Half Adder on each layer. Hence we have:
+\[
+4.5n - d m \geq 2n \Rightarrow d \leq 2.5
+\]
+
+To analyze further, consider some specific useful scenarios. First, adding two \( n \)-bit numbers directly is convenient since one may use Full Adders at each layer. This scenario provides an upper bound close to 4, which is already less than 4.5.
+
+We computed the factor \( d \) experimentally using the following formula:
+\[
+d = \frac{4.5 \cdot n \cdot m + n - \text{len(ckt.gates)}}{\text{len(res)}}
+\]
+
+The obtained results for \( n = 100 \) and varying \( m \) were:
+
+\[
+\begin{array}{c|cccccccccc}
+m & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 100 & 1000 \\
+\hline
+d & 4.45 & 4.36 & 4.42 & 3.95 & 4.10 & 4.30 & 4.38 & 4.10 & 3.86 & 3.81
+\end{array}
+\]
+
+This indicates that \( d \) is generally a convenient factor for estimation (That give us hope to prove \(d = 2.5\) some day).
+
+Next, we consider the savings from using special building blocks (e.g., MDFA). Each block internally has 8 gates, effectively reducing the number of bits from 5 to 3. Using these blocks alone would yield a complexity of about \(4n\). But we need to get pairs of \(x, x \oplus y \) somehow, we can achieve this efficiency, reducing the complexity slightly further to \(4.5n\) from initially \(5n\).
+
+We will move from least significant layer and count how many gates we spend. From previous layer we can receive some numbers of pairs \(x, x \oplus y \) and \textbf{No more than one single bit} (namely carry in out notation).
+From this moment on we will pay many attention on each case. A careful analysis of all possible scenarios at each layer is required. These scenarios include:
+\begin{enumerate}
+    \item A carry exists, and the number of new bits is even.
+    \item A carry exists, and the number of new bits is odd.
+    \item No carry, and an even number of new bits.
+    \item No carry, and an odd number of new bits.
+\end{enumerate}
+
+The most challenging scenarios occur when there's an odd number of bits at the current level with existing carry bit.
+
+
+\textbf{1. Carry exists, even numbers of new bits:}\\
+Denote the carry bit as \( z \). We pair remaining pair of bits with efficiently. If an odd number of pairs occurs, one pair from the previous level and one pair from the current level will yield 5 gates for 2 bits, hence \( d' = 2.5 \). If even pairs are present, then clearly we moved from 5 bits to only 2 in the last MDFA that give us \( d' = 4.5 - 1 = 3.5 \).
+
+\textbf{2. Carry exists, odd numbers of new bits:}\\
+Critically, at the next level, we pass no more than one unpaired bit. This ensures one-bit reduction per level, achieving \( d' = 3 \). Accounting for the carry bit \( z \), the complexity remains controlled (at most 4), maintaining our target bounds.
+
+\textbf{3. No carry, odd numbers of new bits:}\\
+Similar reasoning as above. Again, pairing is imperfect, yielding \( d' = 2.5 \). This scenario aligns closely with the earlier bounds.
+
+\textbf{4. No carry, even numbers of new bits (critical scenario):}\\
+We have an even number of bits, but we deliberately leave one pair aside for handling separately due to the carry-less structure. Processing the leftover pair requires at most 8 gates, thus achieving \( d' = 2.5 \).
+
+In this case, we must employ a special MDFA block (with a constant 0 on input and two pairs with  \(x, x \oplus y \) type), ensuring efficient handling. This block involves an XOR gate for carry adjustments, using 7 gates to handle 2 bits, leading precisely to:
+\[
+d' = 4.5 - 3.5 = 1
+\]
+
+\todo[inline]{I need to work more carefully with all these cases. Now it looks like: trivial, easy to check, hence... \\
+But also I don't want to make it weird way with paragraphs for each mini-block}
+
+\textbf{Result:}\\
+All scenarios thus remain within our bounds \(d' \ge 1\), concluding our proof that the total size of the constructed circuit does not exceed \(4.5n - m\).
+\end{proof}
 
 
 
