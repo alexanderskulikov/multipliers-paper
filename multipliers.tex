@@ -88,7 +88,7 @@ Three specific scenarios where it~is used frequently are listed below.
 \end{itemize}
 In~terms of~the dot-notation introduced by~Dadda~\cite{dadda}, the three scenarios discussed above are visualized as~shown in~Figure~\ref{figure:dot1}.
 
-\begin{figure}[ht]
+\begin{figure}%[ht]
 	\begin{center}
 	    \begin{tikzpicture}
 	        \begin{scope}[xshift=25mm]
@@ -140,7 +140,7 @@ is a~special case),
 or~to~add three $n$-bit numbers, or~to~add a~few bits of~varying significance,
 see Figure~\ref{figure:dot2}.
 
-\begin{figure}[ht]
+\begin{figure}%[ht]
 	\begin{center}
 	    \begin{tikzpicture}
 	        \begin{scope}
@@ -195,7 +195,7 @@ In~dot notation, the goal of~bit addition is~to~``flatten''
 the distribution of~bits, that~is, to~leave one bit at~each significance layer.
 Figure~\ref{figure:baexample} gives an~example.
 
-\begin{figure}[ht]
+\begin{figure}%[ht]
 	\begin{center}
 		\begin{tikzpicture}
 			\begin{scope}
@@ -238,7 +238,7 @@ and Full Adder~(FA). They compute the binary representation of~the sum
 of~two and three bits, respectively (that~is, $\SUM_2$ and $\SUM_3$).
 In~the full binary basis, they can be~implemented in~two and five gates, respectively, see Figure~\ref{figure:sum23}.
 
-\begin{figure}[ht]
+\begin{figure}%[ht]
     \begin{center}
         \begin{tikzpicture}
             \begin{scope}[label distance=-.9mm, scale=.7]
@@ -338,7 +338,7 @@ In~general, whereas the algorithm produces a~circuit of~size about~$5n$
 for $\SUM_n$, this function can be~computed by~a~circuit of~size about $4.5n$
 as~shown by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
 
-\begin{figure}[!ht]
+\begin{figure}%[ht]
 	\begin{tikzpicture}
 		\begin{scope}[scale=.7]
 			\begin{scope}[scale=1.2, yshift=-10mm]
@@ -478,7 +478,7 @@ It~allows one to~compute MDFA in~eight gates (whereas the circuit size of~DFA is
 of~an~optimal circuit of~size~$11$ computing~$\SUM_5$ shown on~the right
 of~Figure~\ref{figure:mdfa}.
 
-\begin{figure}[ht]
+\begin{figure}%[ht]
     \begin{center}
         \begin{tikzpicture}[scale=.7]
             \begin{scope}[scale=.7]
@@ -669,6 +669,28 @@ But also I don't want to make it weird way with paragraphs for each mini-block}
 \textbf{Result:}\\
 All scenarios thus remain within our bounds \(d' \ge 1\), concluding our proof that the total size of the constructed circuit does not exceed \(4.5n - m\).
 \end{proof}
+
+\section{Conclusion and Further Directions}
+
+In this paper, we~presented smaller circuits for bit addition.
+In~many practically relevant scenarios, the described circuits
+are about 10\% smaller than the known circuits composed 
+out~of Half Adders and Full Adders. 
+Also, we~implemented generators that allow one 
+to~produce the corresponding circuits using a~single line of~code
+via the \texttt{Cirbo} package~\cite{DBLP:journals/corr/abs-2412-14933}.
+
+The next natural step would~be to~optimize the depth of~the presented circuits.
+Whereas the depth of~our circuits is~linear,
+we~have been interested in~the circuit size mainly and
+have not tried to~optimize the depth. We~believe that it~should be~possible
+to~adjust our circuits to~make the depth logarithmic. It~would be~interesting
+to~analyze this formally and to~answer the following questions:
+\begin{enumerate}
+	\item Is~it possible to~compute $\BA_n^s$ in~depth $O(\log n)$, for any $s \in \mathbb{Z}_{\ge 0}^n$?
+	\item How small can the constant hidden in~$O(\log n)$~be?
+	\item Is~it possible to~optimize both depth and size simultaneously?
+\end{enumerate}
 
 
 
