@@ -203,13 +203,13 @@ Figure~\ref{figure:baexample} gives an~example.
 					\draw[l] (\x * \d, -1) -- (\x * \d, .5);
 					\node[below] at (\x * \d, -1) {$\n$};
 				}
-				
+
 				\foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 1/-1, 1/0, 2/-1}
 				\node[dot] at (\x * \d, \y * \d - \d) {};
 			\end{scope}
-			
+
 			\draw[dashed, ->] (1.5, -\d) -- (2.5, -\d);
-			
+
 			\begin{scope}[xshift=40mm]
 				\foreach \x [count=\n from 0] in {3, 2, ..., -2} {
 					\draw[l] (\x * \d, -1) -- (\x * \d, .5);
@@ -316,7 +316,7 @@ For many vectors~$s$, the upper bound
 $5n-3m$ is~loose:
 it~does not match the size of~the actual circuit
 produced by~the algorithm.
-A~straightforward example is $s=(0,1,\dotsc,n)$:
+A~straightforward example is $s=(0,1,\dotsc,n-1)$:
 in~this case, no~gates are needed whereas the upper bound is~$2n$.
 It~is also worth noting that, in~some cases, the resulting circuit
 is~\emph{provably} optimal.
@@ -341,7 +341,7 @@ as~shown by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
 \begin{figure}%[ht]
 	\begin{tikzpicture}
 		\begin{scope}[scale=.7]
-			\begin{scope}[scale=1.2, yshift=-10mm]
+			\begin{scope}[scale=1.2, yshift=10mm]
 				\begin{scope}[yshift=20mm]
 					\foreach \x [count=\n from 0] in {0} {
 						\draw[l] (\x * \d, -1) -- (\x * \d, 1.5);
@@ -349,10 +349,10 @@ as~shown by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
 					}
 					\foreach \n in {-2,-1,...,2}
 						\node[dot] at (0, \n * \d) {};
-						
+
 					\path (0.2, 0) edge[->, dashed] node[below] {FA} (0.8, 0);
 				\end{scope}
-				
+
 				\begin{scope}[xshift=14mm, yshift=20mm]
 					\foreach \x [count=\n from 0] in {0, -1} {
 						\draw[l] (\x * \d, -1) -- (\x * \d, 1.5);
@@ -362,7 +362,7 @@ as~shown by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
 						\node[dot] at (\x * \d, \y * \d) {};
 					\path (0.2, 0) edge[->, dashed] node[below] {FA} (0.8, 0);
 				\end{scope}
-				
+
 				\begin{scope}[xshift=28mm, yshift=20mm]
 					\foreach \x [count=\n from 0] in {0, -1} {
 						\draw[l] (\x * \d, -1) -- (\x * \d, 1.5);
@@ -372,7 +372,7 @@ as~shown by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
 						\node[dot] at (\x * \d, \y * \d) {};
 					\path (0.2, 0) edge[->, dashed] node[below] {HA} (0.8, 0);
 				\end{scope}
-				
+
 				\begin{scope}[xshift=46mm, yshift=20mm]
 					\foreach \x [count=\n from 0] in {0, -1, -2} {
 						\draw[l] (\x * \d, -1) -- (\x * \d, 1.5);
@@ -381,6 +381,18 @@ as~shown by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
 					}
 				\end{scope}
 			\end{scope}
+
+            \begin{scope}[yshift=-30mm, scale=.9]
+                %\draw[help lines] (0, 0) grid (6, 4);
+                \foreach \n/\x/\y in {x_1/0/3, x_2/1/4, x_3/2/4, x_4/4/4, x_5/5/4, w_0/6/3, w_1/6/1.5, w_2/3/0.5}
+                    \node[input] (\n) at (\x, \y) {$\n$};
+                \draw (0.5, 2.5) rectangle (2.5, 3.5); \node at (1.5, 3) {FA};
+                \draw (3.5, 2.5) rectangle (5.5, 3.5); \node at (4.5, 3) {FA};
+                \draw (0.5, 1) rectangle (5.5, 2); \node at (3, 1.5) {HA};
+                \foreach \f/\t in {x_1/{0.5, 3}, x_2/{1, 3.5}, x_3/{2, 3.5}, x_4/{4, 3.5}, x_5/{5, 3.5}, {5.5, 3}/w_0, {2.5, 3}/{3.5, 3},
+                {1.5, 2.5}/{1.5, 2}, {4.5, 2.5}/{4.5, 2}, {5.5, 1.5}/w_1, {3, 1}/w_2}
+                    \draw[->] (\f) -- (\t);
+            \end{scope}
 
 			\begin{scope}[label distance=-1mm, xshift=70mm, yshift=20mm]
 				\foreach \n/\x/\y in {1/0/3, 2/1/3, 3/2/3, 4/2.5/1, 5/3.5/1}
@@ -412,7 +424,7 @@ as~shown by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
 			\end{scope}
 		\end{scope}
 	\end{tikzpicture}
-	\caption{A~circuit of~size~$12$ computing~$\SUM_5$ composed of~two Full Adders and one Half Adder.}
+	\caption{A~circuit of~size~$12$ computing~$\SUM_5$ composed of~two Full Adders and one Half Adder: dot notation (top left), block structure (bottom left), and a~circuit (right).}
 	\label{figure:sumfive}
 \end{figure}
 
@@ -427,26 +439,31 @@ We~complement our theoretical result by~an~open source implementation
 of~generators producing circuits for bit addition and multiplication.
 
 \section{General Setting}
-In~this section, we~provide formal definitions
-of~Boolean functions and the computational model
-studied in~this paper.
+In~this section,
+we~formally introduce the Boolean functions
+studied in~this paper as~well as~the main building blocks
+for computing them.
 
 \subsection{Boolean Functions}
 The main Boolean function studied in~this paper
 is~\emph{bit adder}
 \[\BA_n^{s_1, \dotsc, s_n} \colon \{0,1\}^n \to \{0,1\}^m.\]
 It~computes the binary representation of~the weighted sum of~input bits:
-\[\BA(x_1, \dotsc, x_n)=(y_0, \dotsc, y_m) \colon \sum_{i=1}^{n}2^{s_i}x_i=\sum_{i=0}^{m-1}2^iy_i\]
-The number~$m$ of~outputs of $\BA$ is~determined by~its significance vector:
+\[\BA(x_1, \dotsc, x_n)=(y_0, \dotsc, y_m) \colon \sum_{i=1}^{n}2^{s_i}x_i=\sum_{i=0}^{m-1}2^iy_i.\]
+The number~$m$ of~outputs of $\BA_n^s$ is~determined by~its significance vector $s=(s_1, \dotsc, s_n)$:
 \[m=\left\lceil \log_2\left( \sum_{i=1}^{n}2^{s_i} + 1\right) \right\rceil.\]
 Many practically important Boolean functions can be~computed using bit summation.
 \begin{itemize}
-	\item The function $\ADD_n \colon \{0,1\}^{2n} \to \{0,1\}^{n+1}$ computes the sum 
-	of~two $n$-bit numbers: $\ADD_n=\BA_{2n}^{0,0,1,1,\dotsc,n-1,n-1}$.
-	\item The function $\SUM_n \colon \{0,1\}^n \to \{0,1\}^{\lceil \log_2(n+1) \rceil}$
-	computes the sum of~$n$ bits: $\SUM_n=\ADD_n^{0,0,\dotsc,0}$.
-	\item The function $\MULT_n \colon \{0,1\}^{2n} \to \{0,1\}^{2n}$ computes the product 
-	of~two $n$-bit numbers: 
+    \item The function $\SUM_n \colon \{0,1\}^n \to \{0,1\}^{\lceil \log_2(n+1) \rceil}$
+    computes the sum of~$n$ bits: \[\SUM_n(x_1, \dotsc, x_n)=\ADD_n^{0,0,\dotsc,0}(x_1, \dotsc, x_n).\]
+	\item The function $\ADD_n \colon \{0,1\}^{2n} \to \{0,1\}^{n+1}$ computes the sum
+	of~two $n$-bit numbers:
+    \begin{multline*}
+        \ADD_n(x_0, \dotsc, x_{n-1}, y_0, \dotsc, y_{n-1})\\
+        =\BA_{2n}^{0,\dotsc,n-1,0,\dotsc,n-1}(x_0, \dotsc, x_{n-1}, y_0, \dotsc, y_{n-1}).
+    \end{multline*}
+	\item The function $\MULT_n \colon \{0,1\}^{2n} \to \{0,1\}^{2n}$ computes the product
+	of~two $n$-bit numbers:
 	\begin{multline*}
 	\MULT_n(x_0, \dotsc, x_{n-1}, y_0, \dotsc, y_{n-1})\\=\BA_{n^2}^{(i+j)_{0 \le i, j < n}}\left(\left(x_i \land y_j\right)_{0 \le i, j < n}\right).
 	\end{multline*}
@@ -466,9 +483,52 @@ The size of a~circuit is~its number of~internal gates.
 
 \subsection{Basic Building Blocks}
 As~discussed before, the Half Adder and Full Adder are basic building
-blocks for computing bit addition. Here, we~describe another block, called MDFA
-introduced by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
+blocks for computing bit addition. Figure~\ref{figure:sum17fa}
+shows how to~synthesize a~circuit of~size~$66$ computing $\SUM_{17}$
+out of~three Half Adders and twelve Full Adders.
+It~is not difficult to~see that a~similar block structure can
+be~used for any~$n$ yielding a~circuit of size at~most~$5n$ for $\SUM_n$.
 
+\begin{figure}
+    \begin{center}
+        \begin{tikzpicture}[scale=0.47]
+            %\draw[help lines] (2, 0) grid (17, 6);
+            \foreach \n in {2,...,17}
+                \node[input] (\n) at (\n, 6) {$x_{\n}$};
+            \foreach \n in {2, 4, ..., 16} {
+                \draw (\n - 0.25, 4.5) rectangle (\n + 1.25, 5.5);
+                \node at (\n + 0.5, 5) {FA};
+                \tikzmath{\i=int(\n + 1);}
+                \draw[->] (\n) -- (\n, 5.5);
+                \draw[->] (\i) -- (\i, 5.5);
+                \ifnumless{\n}{16}{\draw[->] (\n + 1.25, 5) -- (\n + 1.75, 5);}{}
+            }
+            \foreach \n in {2, 6, 10, 14} {
+                \draw (\n - 0.25, 3) rectangle (\n + 3.25, 4);
+                \node at (\n + 1.5, 3.5) {\ifnumless{\n}{3}{HA}{FA}};
+                \draw[->] (\n + 0.5, 4.5) -- (\n + 0.5, 4);
+                \draw[->] (\n + 2.5, 4.5) -- (\n + 2.5, 4);
+                \ifnumless{\n}{14}{\draw[->] (\n + 3.25, 3.5) -- (\n + 3.75, 3.5);}{}
+            }
+            \draw (1.75, 1.5) rectangle (9.25, 2.5); \node at (5.5, 2) {HA};
+            \draw (9.75, 1.5) rectangle (17.25, 2.5); \node at (13.5, 2) {FA};
+            \draw (1.75, 0) rectangle (17.25, 1); \node at (9.5, 0.5) {HA};
+
+            \foreach \n/\x/\y in {x_1/1/5, w_0/18/5, w_1/18/3.5, w_2/18/2, w_3/18/0.5, w_4/9.5/-0.75}
+                \node[input] (\n) at (\x, \y) {$\n$};
+
+            \foreach \f/\t in {x_1/{1.75, 5}, {17.25, 5}/w_0, {17.25, 3.5}/w_1, {17.25, 2}/w_2, {17.25, 0.5}/w_3, {3.5, 3}/{3.5, 2.5},
+            {7.5, 3}/{7.5, 2.5}, {11.5, 3}/{11.5, 2.5}, {15.5, 3}/{15.5, 2.5},
+            {5.5, 1.5}/{5.5, 1}, {13.5, 1.5}/{13.5, 1}, {9.5, 0}/w_4, {9.25, 2}/{9.75, 2}}
+                \draw[->] (\f) -- (\t);
+        \end{tikzpicture}
+    \end{center}
+    \caption{A~circuit computing $\SUM_{17}$ composed out~of three Half Adders and twelve Full Adders. Its size is $3 \cdot 2 + 12 \cdot 5=66$.}
+    \label{figure:sum17fa}
+\end{figure}
+
+It~turns out that better circuit designs are possible for $\SUM_n$
+as~shown by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
 Consider two consecutive Full Adders shown on~the top left of~Figure~\ref{figure:mdfa}. The corresponding function DFA (for Double Full Adder) has the following specification: \[\operatorname{DFA}(x_1, x_2,\dotsc,x_5)=(b_0,b_1,a_1) \colon x_1+\dotsb+x_5=b_0+2(b_1+a_1).\]
 Then, MDFA (for Modified Double Full Adder) has the following specification:
 \[\MDFA(x_1 \oplus x_2, x_2, x_3, x_4, x_4 \oplus x_5)=(b_0, a_1, a_1 \oplus b_1).\]
@@ -553,35 +613,49 @@ of~Figure~\ref{figure:mdfa}.
     \label{figure:mdfa}
 \end{figure}
 
-\todo[inline]{explain how MDFA can be used to compute SUM}
+Using MDFA blocks, one can compute $\SUM_n$ roughly as~follows:
+\begin{enumerate}
+    \item Compute $x_2 \oplus x_3, x_4 \oplus x_5, \dotsc, x_{n-1} \oplus x_n$ ($n/2$ gates).
+    \item Apply at~most~$n/2$ $\MDFA$ blocks (no~more than $4n$~gates).
+    \item The last MDFA block outputs two bits: $a$~and~$a\oplus b$. Instead of~them, one needs to~compute $a \oplus b$ and $a \land b$. To~achieve this,
+    it~suffices to apply $x>y=(x \land \overline{y})$ operation:
+    \(a \land b = a>(a \oplus b)\).
+\end{enumerate}
+This gives an~upper bound $4.5n$ for $\SUM_n$, its formal proof can
+be~found in~\cite{DBLP:journals/ipl/DemenkovKKY10}. Figure~\ref{figure:sum17mdfa} gives an~example of~the corresponding design
+for~$\SUM_17$.
 
-\begin{figure*}%[!ht]
+\begin{figure}%[!ht]
 	\begin{center}
-		\begin{tikzpicture}[xscale=0.75, yscale=.6]
+		\begin{tikzpicture}[scale=0.47]
 			\foreach \n in {2,...,17}
-			\node[input] (\n) at (\n,6) {$x_{\n}$};
+			     \node[input] (\n) at (\n,6) {$x_{\n}$};
 			\foreach \i in {1,...,8} {
 				\tikzmath{\k=int(2*\i); \j=int(2*\i+1);}
 				\node[gate] (a) at (\j,5) {$\oplus$};
 				\draw[->] (\k) -- (a); \draw[->] (\j) -- (a);
 				\draw[->] (a) -- (\j,4); \draw[->] (\k) -- (\k,4);
 			}
-			\foreach \x/\y/\w in {2/4/3, 6/4/3, 10/4/3, 14/4/3, 2/2.5/7, 10/2.5/7, 2/1/15} {
+			\foreach \x/\y/\w/\t in {2/4/3/MDFA, 6/4/3/MDFA, 10/4/3/MDFA, 14/4/3/MDFA, 2/2.5/7/MDFA', 10/2.5/7/MDFA, 2/1/15/MDFA'} {
 				\draw (\x-0.15,\y) rectangle (\x+\w+0.15,\y-1);
-				\node at (\x+\w/2,\y-0.5) {MDFA};
+				\node at (\x+\w/2,\y-0.5) {\t};
 			}
-			\foreach \y/\l/\w in {3.5/x_1/w_0, 2/0/w_1, 0.5/0/w_2} {
+			\foreach \y/\l/\w in {3.5/x_1/w_0} {
 				\node[input] (b) at (1,\y) {$\l$};
 				\draw[->] (b) -- (1.85,\y);
 				\node[input] (c) at (18,\y) {$\w$};
 				\draw[->] (17.15,\y) -- (c);
 			}
-			\foreach \x in {3, 4, 7, 8, 11, 12, 15, 16}
-			\draw[->] (\x,3) -- (\x,2.5);
+
+            \node[input] (w_1) at (18, 2) {$w_1$}; \draw[->] (17.15, 2) -- (w_1);
+            \node[input] (w_2) at (18, 0.5) {$w_2$}; \draw[->] (17.15, 0.5) -- (w_2);
+
+            \foreach \x in {3, 4, 7, 8, 11, 12, 15, 16}
+			     \draw[->] (\x,3) -- (\x,2.5);
 			\foreach \x in {4, 7, 12, 15}
-			\draw[->] (\x,1.5) -- (\x,1);
+			     \draw[->] (\x,1.5) -- (\x,1);
 			\foreach \x/\y in {5/3.5, 9/3.5, 13/3.5, 9/2}
-			\draw[->] (\x+0.15,\y) -- (\x+0.85,\y);
+			     \draw[->] (\x+0.15,\y) -- (\x+0.85,\y);
 
 			\node[input] (w3) at (12,-2) {$w_3$};
 			\draw[->] (12,0) -- (w3);
@@ -592,9 +666,9 @@ of~Figure~\ref{figure:mdfa}.
 			\path (12,0) edge[->,out=-135,in=0] (x);
 		\end{tikzpicture}
 	\end{center}
-	\caption{A~circuit computing $\SUM_{17}$ composed out of~MDFA blocks.}
-	\label{figure:sum17}
-\end{figure*}
+	\caption{A~circuit computing $\SUM_{17}$ composed out~of eight $\oplus$-gates at~the top, two MDFA' blocks, five MDFA blocks, and one final gate. Its size is $8+2 \cdot 6 + 5 \cdot 8 + 1=61$. The block MDFA' results from MDFA by~assigning zero to~one of~its inputs ($x_3$ in~terms of~Figure~\ref{figure:mdfa}); since this input feeds two gates, MDFA' can be~implemented using six gates.}
+	\label{figure:sum17mdfa}
+\end{figure}
 
 \section{New Upper Bound for Circuit Size of~Bit Addition}
 In~this section, we~prove a~new upper bound $4.5-m$ for the circuit size
@@ -605,7 +679,7 @@ better than $5n-3m$ by~about $10\%$. This applies to~multipliers and $\SUM_n$.
     \[\operatorname{size}(\BA_n^s) \le 4.5n-m.\]
 \end{theorem}
 \begin{proof}
-Before we move to the prove exactly, let's think what constant \(d\) we can choose for 
+Before we move to the prove exactly, let's think what constant \(d\) we can choose for
     \[\operatorname{size}(\BA_n^s) \le 4.5n-md?\]
 
 First, consider a simple example to obtain initial bounds for the factor \( d \). Suppose we have $\BA^{0,0,1,2\dotsc,n - 1}_{n + 1}$. Such a scenario yields \( m = n + 1 \). The number of required input gates is at least \( 2n \), because we must use at least Half Adder on each layer. Hence we have:
@@ -670,13 +744,15 @@ But also I don't want to make it weird way with paragraphs for each mini-block}
 All scenarios thus remain within our bounds \(d' \ge 1\), concluding our proof that the total size of the constructed circuit does not exceed \(4.5n - m\).
 \end{proof}
 
+\section{Implementation and Experimental Evaluation}
+
 \section{Conclusion and Further Directions}
 
 In this paper, we~presented smaller circuits for bit addition.
 In~many practically relevant scenarios, the described circuits
-are about 10\% smaller than the known circuits composed 
-out~of Half Adders and Full Adders. 
-Also, we~implemented generators that allow one 
+are about 10\% smaller than the known circuits composed
+out~of Half Adders and Full Adders.
+Also, we~implemented generators that allow one
 to~produce the corresponding circuits using a~single line of~code
 via the \texttt{Cirbo} package~\cite{DBLP:journals/corr/abs-2412-14933}.
 
