@@ -22,6 +22,18 @@
 \DeclareMathOperator{\BA}{BA}
 \DeclareMathOperator{\MDFA}{MDFA}
 
+\usepackage{newfloat}
+\usepackage{listings}
+\DeclareCaptionStyle{ruled}{labelfont=normalfont,labelsep=colon,strut=off} % DO NOT CHANGE THIS
+\lstset{%
+	basicstyle={\footnotesize\ttfamily},% footnotesize acceptable for monospace
+	%numbers=left,numberstyle=\footnotesize,xleftmargin=2em,% show line numbers, remove this entire line if you don't want the numbers.
+	aboveskip=0pt,belowskip=0pt,%
+	showstringspaces=false,tabsize=2,breaklines=true}
+\floatstyle{ruled}
+\newfloat{listing}{tb}{lst}{}
+\floatname{listing}{Listing}
+
 \begin{document}
 
 \begin{CCSXML}
@@ -745,6 +757,40 @@ All scenarios thus remain within our bounds \(d' \ge 1\), concluding our proof t
 \end{proof}
 
 \section{Implementation and Experimental Evaluation}
+We~implemented efficient generators of~our new circuits in~the Cirbo framework~\cite{DBLP:journals/corr/abs-2412-14933}. Listing~\ref{listing:first} shows
+that how to~generate an~efficient circuit computing $\SUM_{31}$ in~just two lines of~code.
+
+\begin{listing}
+	\caption{TBW}
+	\label{listing:first}
+	\begin{lstlisting}
+from cirbo.core.circuit import Circuit
+from cirbo.synthesis.generation.arithmetics.summation import add_sum_n_bits
+
+ckt = Circuit.bare_circuit(input_size=31)
+add_sum_n_bits(ckt, ckt.inputs)
+ckt.save_to_file('sum31.bench')
+	\end{lstlisting}
+\end{listing}
+
+\begin{table}
+	\begin{center}
+		\small
+		\begin{tabular}{lrrrrrrrrrr}
+			\toprule
+			$n$ & 7 & 15 & 31 & 63 & 127 & 255 & 511 & 1023 & 2047 \\
+			\midrule
+			& 20 & 55 & 130 & 285 & 600 & 1235 & 2510 & 5065 & 10180 \\
+			& 19 & 51 & 119 & 259 & 543 & 1115 & 2263 & 4563 & 9167 \\
+			& 5.0\%  & 7.3\%  & 8.5\%  & 9.1\%  & 9.5\%  & 9.7\%  & 9.8\%  & 9.9\%  & 10.0\% \\ 
+			\bottomrule
+		\end{tabular}
+	\end{center}
+	\caption{Comparing the size of~circuits for $\SUM_n$ composed out of~Full Adders with
+	circuits composed out of~MDFA. The bottom row shows the improvement in~percents.}
+	\label{table:first}
+\end{table}
+
 
 \section{Conclusion and Further Directions}
 
@@ -767,7 +813,6 @@ to~analyze this formally and to~answer the following questions:
 	\item How small can the constant hidden in~$O(\log n)$~be?
 	\item Is~it possible to~optimize both depth and size simultaneously?
 \end{enumerate}
-
 
 
 \bibliographystyle{ACM-Reference-Format}
