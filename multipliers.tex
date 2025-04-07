@@ -1,7 +1,7 @@
 \documentclass[sigconf, review, anonymous]{acmart}
 
 \usepackage{tikz}
-\usetikzlibrary{math}
+\usetikzlibrary{math, fit}
 
 \usepackage{listings}
 
@@ -12,7 +12,8 @@
 \tikzstyle{outgate}         = [gate, thick]
 \tikzstyle{wire}            = [draw,->]
 \tikzstyle{notwire}         = [draw,->,dashed]
-\tikzmath{\d=0.4;}
+\tikzstyle{pair} = [rectangle, draw, dashed, inner sep=.7mm]
+\tikzmath{\d=0.4;} % distance between dots
 
 \usepackage[textwidth=15mm]{todonotes}
 
@@ -186,7 +187,7 @@ see Figure~\ref{figure:dot2}.
                     \node[below] at (\x * \d, -1) {$\n$};
                 }
 
-	            \foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 1/-1, 1/0, 2/-1}
+	            \foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 0/-1, 1/-1, 1/0, 2/-1}
 	                \node[dot] at (\x * \d, \y * \d - \d) {};
 	        \end{scope}
 	    \end{tikzpicture}
@@ -216,7 +217,7 @@ Figure~\ref{figure:baexample} gives an~example.
 					\node[below] at (\x * \d, -1) {$\n$};
 				}
 
-				\foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 1/-1, 1/0, 2/-1}
+				\foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 0/-1, 1/-1, 1/0, 2/-1}
 				\node[dot] at (\x * \d, \y * \d - \d) {};
 			\end{scope}
 
@@ -231,7 +232,7 @@ Figure~\ref{figure:baexample} gives an~example.
 			\end{scope}
 		\end{tikzpicture}
 	\end{center}
-	\caption{The function $\BA_7^{0,1,1,3,3,3,4} \colon \{0,1\}^7 \to \{0,1\}^6$ replaces seven bits of~significance $(0,1,1,3,3,3,4)$ with six bits of~significance $(0,1,2,3,4,5)$.}
+	\caption{The function $\BA_8^{0,1,1,2,3,3,3,4} \colon \{0,1\}^7 \to \{0,1\}^6$ replaces eight bits of~significance $(0,1,1,2,3,3,3,4)$ with six bits of~significance $(0,1,2,3,4,5)$.}
 	\label{figure:baexample}
 \end{figure}
 
@@ -289,7 +290,7 @@ In~the full binary basis, they can be~implemented in~two and five gates, respect
             \end{scope}
 
             \begin{scope}[xshift=-40mm, yshift=-20mm]
-                \draw[l] (0, -1) -- (0, 0.5); \node[below, gray] at (0, -1) {$i$};
+                \draw[l] (0, -1) -- (0, 0.5); \node[below] at (0, -1) {$i$};
                 \node[dot, label=left:$x_1$] at (0, -0.75) {};
                 \node[dot, label=left:$x_2$] at (0, -0.25) {};
                 \node[dot, label=left:$x_3$] at (0, 0.25) {};
@@ -442,7 +443,7 @@ as~shown by~Demenkov et~al.~\cite{DBLP:journals/ipl/DemenkovKKY10}.
 
 
 In~this paper, we~generalize the construction by~Demenkov et~al.
-Namely, we~prove an~upper bound $4.5n-m$
+Namely, we~prove an~upper bound $4.5n-2m$
 for the circuit size of~bit addition.
 In~the regimes where $m$~is~small
 compared to~$n$, this gives a~circuit that is~about $10\%$ smaller.
@@ -461,7 +462,7 @@ The main Boolean function studied in~this paper
 is~\emph{bit adder}
 \[\BA_n^{s_1, \dotsc, s_n} \colon \{0,1\}^n \to \{0,1\}^m.\]
 It~computes the binary representation of~the weighted sum of~input bits:
-\[\BA(x_1, \dotsc, x_n)=(y_0, \dotsc, y_m) \colon \sum_{i=1}^{n}2^{s_i}x_i=\sum_{i=0}^{m-1}2^iy_i.\]
+\[\BA(x_1, \dotsc, x_n)=(y_0, \dotsc, y_{m-1}) \colon \sum_{i=1}^{n}2^{s_i}x_i=\sum_{i=0}^{m-1}2^iy_i.\]
 The number~$m$ of~outputs of $\BA_n^s$ is~determined by~its significance vector $s=(s_1, \dotsc, s_n)$:
 \[m=\left\lceil \log_2\left( \sum_{i=1}^{n}2^{s_i} + 1\right) \right\rceil.\]
 Many practically important Boolean functions can be~computed using bit summation.
@@ -481,15 +482,18 @@ Many practically important Boolean functions can be~computed using bit summation
 	\end{multline*}
 \end{itemize}
 
+\todo[inline]{mention that we consider non-degenerate cases (when $m \le n$) only}
+
 
 \subsection{Boolean Circuits}
 A~circuit is~a~natural way of~computing Boolean functions.
-It~is an~acyclic directed graph of in-degree $0$~and~$2$ whose $n$~source
+It~is an~acyclic directed graph of in-degree $0$~and~$2$ whose $n+2$~source
 nodes are labeled with input variables
-$x_1, \dotsc, x_n$ and all other nodes (called \emph{internal})
+$x_1, \dotsc, x_n$ and constants $0$~and~$1$, whereas all other nodes
 are labeled with binary Boolean operations.
-The nodes of~the circuit are called \emph{gates} and each gate computes
-a~(single-output) Boolean function of~$x_1, \dotsc, x_n$. Thus, if~$m$ gates of the
+The inputs nodes are called input gates, all other nodes are called internal gates.
+Each gate computes
+a~(single-output) Boolean function of~$x_1, \dotsc, x_n$. If~$m$ gates of the
 circuit are marked as~outputs, it~computes a~function of~the form $\{0,1\}^n \to \{0,1\}^m$.
 The size of a~circuit is~its number of~internal gates.
 
@@ -505,11 +509,13 @@ be~used for any~$n$ yielding a~circuit of size at~most~$5n$ for $\SUM_n$.
     \begin{center}
         \begin{tikzpicture}[scale=0.47]
             %\draw[help lines] (2, 0) grid (17, 6);
-            \foreach \n in {2,...,17}
-                \node[input] (\n) at (\n, 6) {$x_{\n}$};
+            \foreach \n in {2,...,17} {
+                \tikzmath{\j=int(\n - 1);}
+                \node[input] (\n) at (\n, 6) {$x_{\j}$};
+            }
             \foreach \n in {2, 4, ..., 16} {
                 \draw (\n - 0.25, 4.5) rectangle (\n + 1.25, 5.5);
-                \node at (\n + 0.5, 5) {FA};
+                \node at (\n + 0.5, 5) {\ifnumless{\n}{3}{HA}{FA}};
                 \tikzmath{\i=int(\n + 1);}
                 \draw[->] (\n) -- (\n, 5.5);
                 \draw[->] (\i) -- (\i, 5.5);
@@ -526,16 +532,16 @@ be~used for any~$n$ yielding a~circuit of size at~most~$5n$ for $\SUM_n$.
             \draw (9.75, 1.5) rectangle (17.25, 2.5); \node at (13.5, 2) {FA};
             \draw (1.75, 0) rectangle (17.25, 1); \node at (9.5, 0.5) {HA};
 
-            \foreach \n/\x/\y in {x_1/1/5, w_0/18/5, w_1/18/3.5, w_2/18/2, w_3/18/0.5, w_4/9.5/-0.75}
+            \foreach \n/\x/\y in {w_0/18/5, w_1/18/3.5, w_2/18/2, w_3/18/0.5, w_4/9.5/-0.75}
                 \node[input] (\n) at (\x, \y) {$\n$};
 
-            \foreach \f/\t in {x_1/{1.75, 5}, {17.25, 5}/w_0, {17.25, 3.5}/w_1, {17.25, 2}/w_2, {17.25, 0.5}/w_3, {3.5, 3}/{3.5, 2.5},
+            \foreach \f/\t in {{17.25, 5}/w_0, {17.25, 3.5}/w_1, {17.25, 2}/w_2, {17.25, 0.5}/w_3, {3.5, 3}/{3.5, 2.5},
             {7.5, 3}/{7.5, 2.5}, {11.5, 3}/{11.5, 2.5}, {15.5, 3}/{15.5, 2.5},
             {5.5, 1.5}/{5.5, 1}, {13.5, 1.5}/{13.5, 1}, {9.5, 0}/w_4, {9.25, 2}/{9.75, 2}}
                 \draw[->] (\f) -- (\t);
         \end{tikzpicture}
     \end{center}
-    \caption{A~circuit computing $\SUM_{17}$ composed out~of three Half Adders and twelve Full Adders. Its size is $3 \cdot 2 + 12 \cdot 5=66$.}
+    \caption{A~circuit computing $\SUM_{16}$ composed out~of four Half Adders and eleven Full Adders. Its size is $4 \cdot 2 + 11 \cdot 5=63$.}
     \label{figure:sum17fa}
 \end{figure}
 
@@ -640,24 +646,23 @@ for~$\SUM_{17}$.
 \begin{figure}%[!ht]
 	\begin{center}
 		\begin{tikzpicture}[scale=0.47]
-			\foreach \n in {2,...,17}
-			     \node[input] (\n) at (\n,6) {$x_{\n}$};
+			\foreach \n in {2,...,17} {
+                \tikzmath{\j=int(\n-1);}
+			    \node[input] (\n) at (\n,6) {$x_{\j}$};
+            }
 			\foreach \i in {1,...,8} {
 				\tikzmath{\k=int(2*\i); \j=int(2*\i+1);}
 				\node[gate] (a) at (\j,5) {$\oplus$};
 				\draw[->] (\k) -- (a); \draw[->] (\j) -- (a);
 				\draw[->] (a) -- (\j,4); \draw[->] (\k) -- (\k,4);
 			}
-			\foreach \x/\y/\w/\t in {2/4/3/MDFA, 6/4/3/MDFA, 10/4/3/MDFA, 14/4/3/MDFA, 2/2.5/7/MDFA', 10/2.5/7/MDFA, 2/1/15/MDFA'} {
+			\foreach \x/\y/\w/\t in {2/4/3/MDFA', 6/4/3/MDFA, 10/4/3/MDFA, 14/4/3/MDFA, 2/2.5/7/MDFA', 10/2.5/7/MDFA, 2/1/15/MDFA'} {
 				\draw (\x-0.15,\y) rectangle (\x+\w+0.15,\y-1);
 				\node at (\x+\w/2,\y-0.5) {\t};
 			}
-			\foreach \y/\l/\w in {3.5/x_1/w_0} {
-				\node[input] (b) at (1,\y) {$\l$};
-				\draw[->] (b) -- (1.85,\y);
-				\node[input] (c) at (18,\y) {$\w$};
-				\draw[->] (17.15,\y) -- (c);
-			}
+
+    		\node[input] (c) at (18,3.5) {$w_0$};
+			\draw[->] (17.15,3.5) -- (c);
 
             \node[input] (w_1) at (18, 2) {$w_1$}; \draw[->] (17.15, 2) -- (w_1);
             \node[input] (w_2) at (18, 0.5) {$w_2$}; \draw[->] (17.15, 0.5) -- (w_2);
@@ -678,83 +683,541 @@ for~$\SUM_{17}$.
 			\path (12,0) edge[->,out=-135,in=0] (x);
 		\end{tikzpicture}
 	\end{center}
-	\caption{A~circuit computing $\SUM_{17}$ composed out~of eight $\oplus$-gates at~the top, two MDFA' blocks, five MDFA blocks, and one final gate. Its size is $8+2 \cdot 6 + 5 \cdot 8 + 1=61$. The block MDFA' results from MDFA by~assigning zero to~one of~its inputs ($x_3$ in~terms of~Figure~\ref{figure:mdfa}); since this input feeds two gates, MDFA' can be~implemented using six gates.}
+	\caption{A~circuit computing $\SUM_{16}$ composed out~of eight $\oplus$-gates at~the top, three MDFA' blocks, four MDFA blocks, and one final gate. Its size is $8+3 \cdot 6 + 4 \cdot 8 + 1=59$. The block MDFA' results from MDFA by~assigning zero to~one of~its inputs ($x_3$ in~terms of~Figure~\ref{figure:mdfa}); since this input feeds two gates, MDFA' can be~implemented using six gates.}
 	\label{figure:sum17mdfa}
 \end{figure}
 
 \section{New Upper Bound for Circuit Size of~Bit Addition}
-In~this section, we~prove a~new upper bound $4.5-m$ for the circuit size
+In~this section, we~prove a~new upper bound $4.5-2m$ for the circuit size
 of~bit addition. For regimes where $m$~is small compared to~$n$, this~is
-better than $5n-3m$ by~about $10\%$. This applies to~multipliers and $\SUM_n$.
+better than $5n-3m$ by~about $10\%$. This applies to~$\MULT_n$ and $\SUM_n$.
 \begin{theorem}
     For any vector $s \in \mathbb{Z}_{\ge 0}^n$,
-    \[\operatorname{size}(\BA_n^s) \le 4.5n-m.\]
+    \[\operatorname{size}(\BA_n^s) \le 4.5n-2m.\]
 \end{theorem}
+
+In~the proof, we~use the following straightforward observation:
+if~the significance vector~$s$ contains a~single zero (say, $s_1=0$), then computing $\BA^s_n$ is~the same as~computing $\BA^{s'}_{n-1}$, where $s'=(s_2-1,\dotsc, s_n-1)$. We~refer to~this operation as~\emph{shifting}.
+See Figure~\ref{figure:shifting} for an~example.
+
+\begin{figure}
+    \begin{center}
+        \begin{tikzpicture}
+            \begin{scope}
+                \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
+                    \draw[l] (\x * \d, -1) -- (\x * \d, .5);
+                    \node[below] at (\x * \d, -1) {$\n$};
+                }
+
+                \foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 0/-1, 1/-1, 1/0, 2/-1}
+                \node[dot] at (\x * \d, \y * \d - \d) {};
+            \end{scope}
+
+            \draw[dashed, ->] (1.5, -\d) -- (3, -\d);
+
+            \begin{scope}[xshift=40mm]
+                \foreach \x [count=\n from 0] in {2, ..., -1} {
+                    \draw[l] (\x * \d, -1) -- (\x * \d, .5);
+                    \node[below] at (\x * \d, -1) {$\n$};
+                }
+
+                \foreach \x/\y in {-2/-1, -1/-1, -1/0, -1/1, 0/-1, 1/-1, 1/0}
+                \node[dot] at (\x * \d + \d, \y * \d - \d) {};
+            \end{scope}
+        \end{tikzpicture}
+    \end{center}
+    \caption{Shifting: computing $\BA_8^{0,1,1,2,3,3,3,4}$ is~the same as~computing $\BA_7^{0,0,1,2,2,2,3}$.}
+    \label{figure:shifting}
+\end{figure}
+
 \begin{proof}
-Before we move to the prove exactly, let's think what constant \(d\) we can choose for
-    \[\operatorname{size}(\BA_n^s) \le 4.5n-md?\]
+    As~the first step, we~do the following: at~every significance layer,
+    we~break all bits, except for possibly one, into pairs and compute
+    the parity for every pair. This takes at~most $n/2$ gates.
 
-First, consider a simple example to obtain initial bounds for the factor \( d \). Suppose we have $\BA^{0,0,1,2\dotsc,n - 1}_{n + 1}$. Such a scenario yields \( m = n + 1 \). The number of required input gates is at least \( 2n \), because we must use at least Half Adder on each layer. Hence we have:
-\[
-4.5n - d m \geq 2n \Rightarrow d \leq 2.5
-\]
+    \begin{center}
+        \begin{tikzpicture}
+                \foreach \x [count=\n from 0] in {2, 1, ..., -2} {
+                    \draw[l] (\x * \d, -1) -- (\x * \d, 1);
+                    \node[below] at (\x * \d, -1) {$\n$};
+                }
 
-To analyze further, consider some specific useful scenarios. First, adding two \( n \)-bit numbers directly is convenient since one may use Full Adders at each layer. This scenario provides an upper bound close to 4, which is already less than 4.5.
+                \foreach [count=\n] \x/\y in {-2/-1, -2/0, -2/1, -2/2, -2/3, -1/-1, -1/0, -1/1, 0/-1, 1/-1, 1/0, 1/1, 1/2, 2/-1, 2/0}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
 
-We computed the factor \( d \) experimentally using the following formula:
-\[
-d = \frac{4.5 \cdot n \cdot m + n - \text{len(ckt.gates)}}{\text{len(res)}}
-\]
+                \foreach \i/\j in {1/2, 3/4, 6/7, 10/11, 12/13, 14/15}
+                    \node[fit=(\i) (\j), pair] {};
+        \end{tikzpicture}
+    \end{center}
 
-The obtained results for \( n = 100 \) and varying \( m \) were:
+    Then, it~remains to~prove that one can compute the sum of~$n$ bits
+    using $4n-2m$ gates if~every significance layer contains at~most one bit
+    without a~pair. We~prove this by~induction on~$n$. The base case $n=1$ is~clear: in~this case, the circuit size is~zero (nothing needs to~be summed~up) and the upper bound is~at~least zero since we~only consider
+    non-degenerate case where $m \le n$. To~prove the induction step,
+    denote by~$l$ the number of~bits on~the least significance layer and consider the following cases.
 
-\[
-\begin{array}{c|cccccccccc}
-m & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 100 & 1000 \\
-\hline
-d & 4.45 & 4.36 & 4.42 & 3.95 & 4.10 & 4.30 & 4.38 & 4.10 & 3.86 & 3.81
-\end{array}
-\]
+    \begin{enumerate}
+        \item $l=1$. In~this case, we~just shift.
+        By~the induction hypothesis, the rest can be~computed by~a~circuit
+        of~size at~most
+        \[4(n-1)-2(m-1)=4n-2m-2<4n-2m.\]
 
-This indicates that \( d \) is generally a convenient factor for estimation (That give us hope to prove \(d = 2.5\) some day).
+        \item $l=2$. Then, the corresponding two bits~$x_1$ and~~$x_2$ are paired meaning that their sum $x_1 \oplus x_2$ is~computed already.
+        Then, we~compute their carry
+        \[c=x_1 > (x_1 \oplus x_2)=x_1 \land x_2\]
+        and transfer~it to~the next layer.
+        If~this layer has an~unpaired bit~$b$, we~pair $b$~and~$c$
+        by~computing $b \oplus c$. Finally, we~shift.
+        By~the induction hypothesis, the size of~the resulting circuit is~at~most
+        \[1+1+4(n-1)-2(m-1)=4n-2m.\]
 
-Next, we consider the savings from using special building blocks (e.g., MDFA). Each block internally has 8 gates, effectively reducing the number of bits from 5 to 3. Using these blocks alone would yield a complexity of about \(4n\). But we need to get pairs of \(x, x \oplus y \) somehow, we can achieve this efficiency, reducing the complexity slightly further to \(4.5n\) from initially \(5n\).
+        \begin{center}
+            \begin{tikzpicture}
+                \begin{scope}
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 0.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
 
-We will move from least significant layer and count how many gates we spend. From previous layer we can receive some numbers of pairs \(x, x \oplus y \) and \textbf{No more than one single bit} (namely carry in out notation).
-From this moment on we will pay many attention on each case. A careful analysis of all possible scenarios at each layer is required. These scenarios include:
-\begin{enumerate}
-    \item A carry exists, and the number of new bits is even.
-    \item A carry exists, and the number of new bits is odd.
-    \item No carry, and an even number of new bits.
-    \item No carry, and an odd number of new bits.
-\end{enumerate}
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 1/-1, 1/0, 1/1}
+                        \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
 
-The most challenging scenarios occur when there's an odd number of bits at the current level with existing carry bit.
+                    \foreach \i/\j in {1/2, 3/4}
+                        \node[fit=(\i) (\j), pair] {};
+                \end{scope}
 
+                \begin{scope}[xshift=20mm]
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 0.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
 
-\textbf{1. Carry exists, even numbers of new bits:}\\
-Denote the carry bit as \( z \). We pair remaining pair of bits with efficiently. If an odd number of pairs occurs, one pair from the previous level and one pair from the current level will yield 5 gates for 2 bits, hence \( d' = 2.5 \). If even pairs are present, then clearly we moved from 5 bits to only 2 in the last MDFA that give us \( d' = 4.5 - 1 = 3.5 \).
+                    \foreach [count=\n] \x/\y in {2/-1, 1/-1, 1/0, 1/1, 1/2}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
 
-\textbf{2. Carry exists, odd numbers of new bits:}\\
-Critically, at the next level, we pass no more than one unpaired bit. This ensures one-bit reduction per level, achieving \( d' = 3 \). Accounting for the carry bit \( z \), the complexity remains controlled (at most 4), maintaining our target bounds.
+                    \foreach \i/\j in {2/3}
+                        \node[fit=(\i) (\j), pair] {};
+                \end{scope}
 
-\textbf{3. No carry, odd numbers of new bits:}\\
-Similar reasoning as above. Again, pairing is imperfect, yielding \( d' = 2.5 \). This scenario aligns closely with the earlier bounds.
+                \begin{scope}[xshift=40mm]
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 0.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
 
-\textbf{4. No carry, even numbers of new bits (critical scenario):}\\
-We have an even number of bits, but we deliberately leave one pair aside for handling separately due to the carry-less structure. Processing the leftover pair requires at most 8 gates, thus achieving \( d' = 2.5 \).
+                    \foreach [count=\n] \x/\y in {2/-1, 1/-1, 1/0, 1/1, 1/2}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
 
-In this case, we must employ a special MDFA block (with a constant 0 on input and two pairs with  \(x, x \oplus y \) type), ensuring efficient handling. This block involves an XOR gate for carry adjustments, using 7 gates to handle 2 bits, leading precisely to:
-\[
-d' = 4.5 - 3.5 = 1
-\]
+                    \foreach \i/\j in {2/3, 4/5}
+                        \node[fit=(\i) (\j), pair] {};
+                \end{scope}
 
-\todo[inline]{I need to work more carefully with all these cases. Now it looks like: trivial, easy to check, hence... \\
-But also I don't want to make it weird way with paragraphs for each mini-block}
+                \begin{scope}[xshift=60mm]
+                    \foreach \x [count=\n from 0] in {2} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 0.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
 
-\textbf{Result:}\\
-All scenarios thus remain within our bounds \(d' \ge 1\), concluding our proof that the total size of the constructed circuit does not exceed \(4.5n - m\).
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2}
+                        \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                %\draw[help lines] (0, -2) grid (7, 1);
+                \path (1.2, -0.5) edge[->, dashed] node[below] {$\land$} (2, -0.5);
+                \path (3.2, -0.5) edge[->, dashed] node[below] {$\oplus$} (4, -0.5);
+                \path (5.2, -0.5) edge[->, dashed] node[below] {shift} (6, -0.5);
+            \end{tikzpicture}
+        \end{center}
+
+        \item $l=3$. For the corresponding three bits $x_1,x_2,x_3$,
+        we~have $x_1 \oplus x_2$, $x_2$, and $x_3$ (that~is, $x_1$~and~$x_2$ are paired). We~apply the Full Adder to~the three bits. This costs four gates, as~$x_1 \oplus x_2$ is~already computed and $x_1$ is~not needed
+        (recall Figure~\ref{figure:sum23}). The sum bit stays on~the same layer, whereas the carry bit~$c$ goes to~the next layer. Then, we~pair~$c$
+        with an~unpaired bit on~the next layer if~needed and shift. This gives an~upper bound
+        \[4+1+4(n-2)-2(m-1)<4n-2m.\]
+
+        \begin{center}
+            \begin{tikzpicture}
+                \begin{scope}
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 0.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 1/-1, 1/0, 1/1}
+                        \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 4/5}
+                        \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=20mm]
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 0.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 1/-1, 1/0, 1/1, 1/2}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {2/3}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=40mm]
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 0.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 1/-1, 1/0, 1/1, 1/2}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {2/3, 4/5}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=60mm]
+                    \foreach \x [count=\n from 0] in {2} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 0.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                %\draw[help lines] (0, -2) grid (7, 1);
+                \path (1.2, -0.5) edge[->, dashed] node[below] {FA} (2, -0.5);
+                \path (3.2, -0.5) edge[->, dashed] node[below] {$\oplus$} (4, -0.5);
+                \path (5.2, -0.5) edge[->, dashed] node[below] {shift} (6, -0.5);
+            \end{tikzpicture}
+        \end{center}
+
+        \item $l=4k$. Apply MDFA' to~two pairs to~produce an~unpaired bit.
+        For the remaining $2k-2$ pairs, keep applying MDFA, each time reusing the unpaired bit. Then, we~shift. The upper bound~is
+        \[6+8(k-1)+4(n-2k)-2(m-1)=4n-2m.\]
+
+        \begin{center}
+            \begin{tikzpicture}
+                \begin{scope}
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 2.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2, 2/3, 2/4, 2/5, 2/6, 1/-1, 1/0}
+                        \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6, 7/8, 9/10}
+                        \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=20mm]
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 2.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2, 1/-1, 1/0, 1/1, 1/2, 2/3}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6, 7/8}
+                        \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=40mm]
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 2.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {1/-1, 1/0, 1/1, 1/2, 1/3, 1/4, 2/-1}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=60mm]
+                    \foreach \x [count=\n from 0] in {2} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 2.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2, 2/3, 2/4}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6}
+                        \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                %\draw[help lines] (0, -2) grid (7, 1);
+                \path (1.2, -0.5) edge[->, dashed] node[below] {MDFA'} (2, -0.5);
+                \path (3.2, -0.5) edge[->, dashed] node[below, text width=20mm, align=center] {MDFA\\ $k-1$} (4, -0.5);
+                \path (5.2, -0.5) edge[->, dashed] node[below] {shift} (6, -0.5);
+            \end{tikzpicture}
+        \end{center}
+
+        \item $l=4k+1$. Apply MDFA $k$~times, then shift. The upper bound~is
+        \[6+8(k-1)+4(n-2k)-2(m-1)=4n-2m.\]
+
+        \begin{center}
+            \begin{tikzpicture}
+                \begin{scope}
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 2.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2, 2/3, 2/4, 2/5, 2/6, 2/7, 1/-1, 1/0}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6, 7/8, 10/11}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=20mm]
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 2.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2, 2/3, 2/4, 1/-1}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=40mm]
+                    \foreach \x [count=\n from 0] in {2} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 2.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2, 2/3, 2/4}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                %\draw[help lines] (0, -2) grid (7, 1);
+                \path (1.2, -0.5) edge[->, dashed] node[below, text width=20mm, align=center] {MDFA\\$k$} (2, -0.5);
+                \path (3.2, -0.5) edge[->, dashed] node[below] {shift} (4, -0.5);
+            \end{tikzpicture}
+        \end{center}
+
+        \item $l=4k+2$. Compute an~$\land$ of~two bits from the same pair:
+        this leaves their sum at~the current layer and puts the just computed
+        carry bit to~the next layer. If~needed, compute the parity of~an~unpaired
+        bit with the just transferred carry bit. Then, apply MDFA $k$~times and shift.
+        Overall, the upper bound~is
+        \[1+1+8k+4(n-2k-1)-2(m-1)=4n-2m.\]
+
+        \begin{center}
+            \begin{tikzpicture}
+                \begin{scope}
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 1.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2, 2/3, 2/4, 1/-1, 1/0, 1/1}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6, 7/8}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=20mm]
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 1.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2, 1/-1, 1/0, 1/1, 1/2, 2/3}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6, 7/8}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=40mm]
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 1.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {1/-1, 1/0, 1/1, 1/2, 1/3, 1/4, 2/-1}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=60mm]
+                    \foreach \x [count=\n from 0] in {2} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 1.5);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2, 2/3, 2/4}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                %\draw[help lines] (0, -2) grid (7, 1);
+                \path (1.2, -0.5) edge[->, dashed] node[below] {$\land$, $\oplus$} (2, -0.5);
+                \path (3.2, -0.5) edge[->, dashed] node[below, text width=20mm, align=center] {MDFA\\ $k$} (4, -0.5);
+                \path (5.2, -0.5) edge[->, dashed] node[below] {shift} (6, -0.5);
+            \end{tikzpicture}
+        \end{center}
+
+        \item $l=4k+3$. Apply the Full Adder to~a~pair of~bits and the unpaired bit.
+        If~needed, pair the just transferred carry bit with an~unpaired bit from
+        the next layer. Then, apply MDFA $k$~times and shift. The resulting upper
+        bound~is
+        \[4+1+8k+4(n-2k-2)-2(m-1)<4n-2m.\]
+
+        \begin{center}
+            \begin{tikzpicture}
+                \begin{scope}
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 2);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2, 2/3, 2/4, 1/-1, 1/0, 1/1, 2/5}
+                        \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6, 7/8}
+                        \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=20mm]
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 2);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2, 1/-1, 1/0, 1/1, 1/2, 2/3}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6, 7/8}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=40mm]
+                    \foreach \x [count=\n from 0] in {2, 1} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 2);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {1/-1, 1/0, 1/1, 1/2, 1/3, 1/4, 2/-1}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                \begin{scope}[xshift=60mm]
+                    \foreach \x [count=\n from 0] in {2} {
+                        \draw[l] (\x * \d, -1) -- (\x * \d, 2);
+                        \node[below] at (\x * \d, -1) {$\n$};
+                    }
+
+                    \foreach [count=\n] \x/\y in {2/-1, 2/0, 2/1, 2/2, 2/3, 2/4}
+                    \node[dot] (\n) at (\x * \d, \y * \d - \d) {};
+
+                    \foreach \i/\j in {1/2, 3/4, 5/6}
+                    \node[fit=(\i) (\j), pair] {};
+                \end{scope}
+
+                %\draw[help lines] (0, -2) grid (7, 1);
+                \path (1.2, -0.5) edge[->, dashed] node[below] {FA, $\oplus$} (2, -0.5);
+                \path (3.2, -0.5) edge[->, dashed] node[below, text width=20mm, align=center] {MDFA\\ $k$} (4, -0.5);
+                \path (5.2, -0.5) edge[->, dashed] node[below] {shift} (6, -0.5);
+            \end{tikzpicture}
+        \end{center}
+    \end{enumerate}
 \end{proof}
+
+
+%
+%\begin{proof}
+%Before we move to the prove exactly, let's think what constant \(d\) we can choose for
+%    \[\operatorname{size}(\BA_n^s) \le 4.5n-md?\]
+%
+%First, consider a simple example to obtain initial bounds for the factor \( d \). Suppose we have $\BA^{0,0,1,2\dotsc,n - 1}_{n + 1}$. Such a scenario yields \( m = n + 1 \). The number of required input gates is at least \( 2n \), because we must use at least Half Adder on each layer. Hence we have:
+%\[
+%4.5n - d m \geq 2n \Rightarrow d \leq 2.5
+%\]
+%
+%To analyze further, consider some specific useful scenarios. First, adding two \( n \)-bit numbers directly is convenient since one may use Full Adders at each layer. This scenario provides an upper bound close to 4, which is already less than 4.5.
+%
+%We computed the factor \( d \) experimentally using the following formula:
+%\[
+%d = \frac{4.5 \cdot n \cdot m + n - \text{len(ckt.gates)}}{\text{len(res)}}
+%\]
+%
+%The obtained results for \( n = 100 \) and varying \( m \) were:
+%
+%\[
+%\begin{array}{c|cccccccccc}
+%m & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 100 & 1000 \\
+%\hline
+%d & 4.45 & 4.36 & 4.42 & 3.95 & 4.10 & 4.30 & 4.38 & 4.10 & 3.86 & 3.81
+%\end{array}
+%\]
+%
+%This indicates that \( d \) is generally a convenient factor for estimation (That give us hope to prove \(d = 2.5\) some day).
+%
+%Next, we consider the savings from using special building blocks (e.g., MDFA). Each block internally has 8 gates, effectively reducing the number of bits from 5 to 3. Using these blocks alone would yield a complexity of about \(4n\). But we need to get pairs of \(x, x \oplus y \) somehow, we can achieve this efficiency, reducing the complexity slightly further to \(4.5n\) from initially \(5n\).
+%
+%We will move from least significant layer and count how many gates we spend. From previous layer we can receive some numbers of pairs \(x, x \oplus y \) and \textbf{No more than one single bit} (namely carry in out notation).
+%From this moment on we will pay many attention on each case. A careful analysis of all possible scenarios at each layer is required. These scenarios include:
+%\begin{enumerate}
+%    \item A carry exists, and the number of new bits is even.
+%    \item A carry exists, and the number of new bits is odd.
+%    \item No carry, and an even number of new bits.
+%    \item No carry, and an odd number of new bits.
+%\end{enumerate}
+%
+%The most challenging scenarios occur when there's an odd number of bits at the current level with existing carry bit.
+%
+%
+%\textbf{1. Carry exists, even numbers of new bits:}\\
+%Denote the carry bit as \( z \). We pair remaining pair of bits with efficiently. If an odd number of pairs occurs, one pair from the previous level and one pair from the current level will yield 5 gates for 2 bits, hence \( d' = 2.5 \). If even pairs are present, then clearly we moved from 5 bits to only 2 in the last MDFA that give us \( d' = 4.5 - 1 = 3.5 \).
+%
+%\textbf{2. Carry exists, odd numbers of new bits:}\\
+%Critically, at the next level, we pass no more than one unpaired bit. This ensures one-bit reduction per level, achieving \( d' = 3 \). Accounting for the carry bit \( z \), the complexity remains controlled (at most 4), maintaining our target bounds.
+%
+%\textbf{3. No carry, odd numbers of new bits:}\\
+%Similar reasoning as above. Again, pairing is imperfect, yielding \( d' = 2.5 \). This scenario aligns closely with the earlier bounds.
+%
+%\textbf{4. No carry, even numbers of new bits (critical scenario):}\\
+%We have an even number of bits, but we deliberately leave one pair aside for handling separately due to the carry-less structure. Processing the leftover pair requires at most 8 gates, thus achieving \( d' = 2.5 \).
+%
+%In this case, we must employ a special MDFA block (with a constant 0 on input and two pairs with  \(x, x \oplus y \) type), ensuring efficient handling. This block involves an XOR gate for carry adjustments, using 7 gates to handle 2 bits, leading precisely to:
+%\[
+%d' = 4.5 - 3.5 = 1
+%\]
+%
+%\todo[inline]{I need to work more carefully with all these cases. Now it looks like: trivial, easy to check, hence... \\
+%But also I don't want to make it weird way with paragraphs for each mini-block}
+%
+%\textbf{Result:}\\
+%All scenarios thus remain within our bounds \(d' \ge 1\), concluding our proof that the total size of the constructed circuit does not exceed \(4.5n - m\).
+%\end{proof}
 
 \section{Implementation and Experimental Evaluation}
 We~implemented efficient generators of~our new circuits in~the Cirbo framework~\cite{DBLP:journals/corr/abs-2412-14933}. Listing~\ref{listing:first} shows
@@ -780,9 +1243,9 @@ ckt.save_to_file('sum31.bench')
 			\toprule
 			$n$ & 7 & 15 & 31 & 63 & 127 & 255 & 511 & 1023 & 2047 \\
 			\midrule
-			& 20 & 55 & 130 & 285 & 600 & 1235 & 2510 & 5065 & 10180 \\
-			& 19 & 51 & 119 & 259 & 543 & 1115 & 2263 & 4563 & 9167 \\
-			& 5.0\%  & 7.3\%  & 8.5\%  & 9.1\%  & 9.5\%  & 9.7\%  & 9.8\%  & 9.9\%  & 10.0\% \\ 
+			FA & 20 & 55 & 130 & 285 & 600 & 1235 & 2510 & 5065 & 10180 \\
+			MDFA & 19 & 51 & 119 & 259 & 543 & 1115 & 2263 & 4563 & 9167 \\
+			& 5\%  & 7.3\%  & 8.5\%  & 9.1\%  & 9.5\%  & 9.7\%  & 9.8\%  & 9.9\%  & 10\% \\
 			\bottomrule
 		\end{tabular}
 	\end{center}
