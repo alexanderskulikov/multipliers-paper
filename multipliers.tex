@@ -71,10 +71,16 @@
     In~this paper, we~investigate the circuit \emph{size} (also known as~area)
     over the full binary basis of~bit addition. Though most of~the known circuits are built from Half Adders and Full Adders,
     we~show that, in~many interesting scenarios, these circuits have suboptimal size
-    and can be~made about 10\% smaller. This applies to~a~wide range
-    of~circuits computing various arithmetic operations.
+    and can be~made about 10\% smaller.
+    Namely, we~improve an~upper bound $5n-3m$ to~$4.5n-2m$,
+    where $n$~is the number of~input bits and $m$~is the number of~output bits.
+%    This applies to~a~wide range
+%    of~circuits computing various arithmetic operations.
+
     We~complement our theoretical result by~an~open source implementation
     of~generators producing circuits for bit addition and multiplication.
+    The generators allows one to~produce the corresponding circuits
+    in~two lines of~code and to~compare them to~existing designs.
 \end{abstract}
 
 
@@ -232,7 +238,7 @@ Figure~\ref{figure:baexample} gives an~example.
 			\end{scope}
 		\end{tikzpicture}
 	\end{center}
-	\caption{The function $\BA_8^{0,1,1,2,3,3,3,4} \colon \{0,1\}^7 \to \{0,1\}^6$ replaces eight bits of~significance $(0,1,1,2,3,3,3,4)$ with six bits of~significance $(0,1,2,3,4,5)$.}
+	\caption{The function $\BA_8^{0,1,1,2,3,3,3,4} \colon \{0,1\}^8 \to \{0,1\}^6$ replaces eight bits of~significance $(0,1,1,2,3,3,3,4)$ with six bits of~significance $(0,1,2,3,4,5)$.}
 	\label{figure:baexample}
 \end{figure}
 
@@ -465,6 +471,11 @@ It~computes the binary representation of~the weighted sum of~input bits:
 \[\BA(x_1, \dotsc, x_n)=(y_0, \dotsc, y_{m-1}) \colon \sum_{i=1}^{n}2^{s_i}x_i=\sum_{i=0}^{m-1}2^iy_i.\]
 The number~$m$ of~outputs of $\BA_n^s$ is~determined by~its significance vector $s=(s_1, \dotsc, s_n)$:
 \[m=\left\lceil \log_2\left( \sum_{i=1}^{n}2^{s_i} + 1\right) \right\rceil.\]
+Such a~definition allows degenerate cases when $m \ge n$: for example, $\BA_1^{5}$ has
+$m=6$ outputs, though five of~them are just zeroes and the only remaining output is~equal
+to~the input. In~this paper, we~focus on~non-degenerate cases when $m<n$.
+
+
 Many practically important Boolean functions can be~computed using bit summation.
 \begin{itemize}
     \item The function $\SUM_n \colon \{0,1\}^n \to \{0,1\}^{\lceil \log_2(n+1) \rceil}$
@@ -1223,7 +1234,7 @@ See Figure~\ref{figure:shifting} for an~example.
 %\end{proof}
 
 \section{Implementation and Experimental Evaluation}
-We~implemented efficient generators of~our new circuits in~the Cirbo framework~\cite{DBLP:journals/corr/abs-2412-14933}. Listing~\ref{listing:first} shows
+We~implemented efficient generators of~our new circuits in~the \texttt{Cirbo} framework~\cite{DBLP:journals/corr/abs-2412-14933}. Listing~\ref{listing:first} shows
 that how to~generate an~efficient circuit computing $\SUM_{31}$ in~just two lines of~code.
 
 \begin{listing}
@@ -1244,11 +1255,11 @@ ckt.save_to_file('sum31.bench')
 		\small
 		\begin{tabular}{lrrrrrrrrrr}
 			\toprule
-			$n$ & 7 & 15 & 31 & 63 & 127 & 255 & 511 & 1023 & 2047 \\
+			$n$ & 15 & 31 & 63 & 127 & 255 & 511 & 1023 & 2047 \\
 			\midrule
-			FA & 20 & 55 & 130 & 285 & 600 & 1235 & 2510 & 5065 & 10180 \\
-			MDFA & 19 & 51 & 119 & 259 & 543 & 1115 & 2263 & 4563 & 9167 \\
-			& 5\%  & 7.3\%  & 8.5\%  & 9.1\%  & 9.5\%  & 9.7\%  & 9.8\%  & 9.9\%  & 10\% \\
+			FA & 55 & 130 & 285 & 600 & 1235 & 2510 & 5065 & 10180 \\
+			MDFA & 51 & 119 & 259 & 543 & 1115 & 2263 & 4563 & 9167 \\
+			& 5.0\%  & 8.5\%  & 9.1\%  & 9.5\%  & 9.7\%  & 9.8\%  & 9.9\%  & 10.0\% \\
 			\bottomrule
 		\end{tabular}
 	\end{center}
