@@ -517,7 +517,7 @@ be~used for any~$n$ yielding a~circuit of size at~most~$5n$ for $\SUM_n$.
 
 \begin{figure}
     \begin{center}
-        \begin{tikzpicture}[scale=0.47]
+        \begin{tikzpicture}[scale=0.5]
             %\draw[help lines] (2, 0) grid (17, 6);
             \foreach \n in {2,...,17} {
                 \tikzmath{\j=int(\n - 1);}
@@ -562,6 +562,7 @@ Then, MDFA (for Modified Double Full Adder) has the following specification:
 \[\MDFA(x_1 \oplus x_2, x_2, x_3, x_4, x_4 \oplus x_5)=(b_0, a_1, a_1 \oplus b_1).\]
 That~is, for pairs of~bits $(x_1, x_2)$, $(x_4, x_5)$, and $(a_1, b_1)$
 it~uses a~slightly different encoding: $(p, p \oplus q)$ instead of~$(p,q)$.
+We~call such bits paired and show them in~dashed boxes in~dot diagrams.
 It~allows one to~compute MDFA in~eight gates (whereas the circuit size of~DFA is~10). Moreover, the corresponding circuit of~size~eight is~just a~part
 of~an~optimal circuit of~size~$11$ computing~$\SUM_5$ shown on~the right
 of~Figure~\ref{figure:mdfa}.
@@ -588,7 +589,8 @@ of~Figure~\ref{figure:mdfa}.
                 \draw[->] (6,0)--(b1);
             \end{scope}
 
-            \begin{scope}[scale=.7,yshift=-60mm]
+			% MDFA block
+            \begin{scope}[scale=.7,yshift=-80mm]
                 %\draw[help lines] (0,0) grid (10,6);
                 \draw (1,0) rectangle (7,2); \node at (4,1) {MDFA};
                 \foreach \n/\x/\y in {3/0/1, 2/1.5/4, 1/2.5/4, 4/5.5/4, 5/6.5/4}
@@ -608,8 +610,31 @@ of~Figure~\ref{figure:mdfa}.
                 \draw[->] (2,0)--(a1);
                 \draw[->] (6,0)--(b1);
             \end{scope}
+            
+            % dot notation
+            \begin{scope}[xshift=75mm, yshift=-50mm]
+            	\draw[l] (-0.5, -1) -- (-0.5, 1.5); 
+            	\node[below] at (-0.5, -1) {$i$};
+            	\node[dot, label=left:$x_1$] (x1) at (-0.5, -0.75) {};
+            	\node[dot, label=left:$x_2$] (x2) at (-0.5, -0.25) {};
+            	\node[dot, label=left:$x_4$] (x4) at (-0.5, 0.25) {};
+            	\node[dot, label=left:$x_5$] (x5) at (-0.5, 0.75) {};
+            	\node[dot, label=left:$x_3$] (x3) at (-0.5, 1.25) {};
+            	\node[fit=(x1) (x2), pair] {};
+            	\node[fit=(x4) (x5), pair] {};
+            	
+            	\draw[dashed, ->] (0, -.25) -- (0.5, -.25);
+            	
+            	\draw[l] (2.5, -1) -- (2.5, 1.5); \node[below] at (2.5, -1) {$i$};
+            	\draw[l] (1.5, -1) -- (1.5, 1.5); \node[below] at (1.5, -1) {$i+1$};
+            	\node[dot, label=left:$a_1$] (a1) at (1.5, -0.75) {};
+            	\node[dot, label=left:$b_1$] (b1) at (1.5, -0.25) {};
+            	\node[dot, label=right:$b_0$] at (2.5, -0.75) {};
+            	\node[fit=(a1) (b1), pair] {};
+            \end{scope}
 
-            \begin{scope}[yscale=.8, xshift=70mm, yshift=-20mm]
+			% SUM5
+            \begin{scope}[yscale=.8, xshift=70mm, yshift=-5mm]
                 %\draw[help lines] (0,-3) grid (4,4);
                 \draw[draw=none, rounded corners=0,fill=gray!20] (0,1.5)--(1,1.5)--(1,2.5)--(2,2.5)--(2,0.5)--(2.5,0.5)--(2.5,-0.5)--(3.5,-0.5)--
                 (3.5,-2.5)--(0,-2.5)--(0,1.5);
@@ -637,7 +662,7 @@ of~Figure~\ref{figure:mdfa}.
             \end{scope}
         \end{tikzpicture}
     \end{center}
-    \caption{Two consecutive Full Adders (top left), the MDFA block (bottom left), and an~optimal circuit for $\SUM_5$ (right) whose highlighted part computes~MDFA.}
+    \caption{Two consecutive Full Adders (top left), the MDFA block (bottom left), an~optimal circuit for $\SUM_5$ (top right) whose highlighted part computes~MDFA, and a~dot diagram for MDFA.}
     \label{figure:mdfa}
 \end{figure}
 
@@ -650,14 +675,13 @@ Using MDFA blocks, one can compute $\SUM_n$ roughly as~follows:
     \(a \land b = a>(a \oplus b)\).
 \end{enumerate}
 This gives an~upper bound $4.5n$ for $\SUM_n$, its formal proof can
-be~found in~\cite{DBLP:journals/ipl/DemenkovKKY10}. Figure~\ref{figure:sum17mdfa} gives an~example of~the corresponding design
+be~found in~\cite{DBLP:journals/ipl/DemenkovKKY10}. 
+Figure~\ref{figure:sum17mdfa} gives an~example of~the corresponding design
 for~$\SUM_{16}$.
 
-\todo[inline]{introduce pair notation; mention MDFA'}
-
-\begin{figure}%[!ht]
+\begin{figure}
 	\begin{center}
-		\begin{tikzpicture}[scale=0.47]
+		\begin{tikzpicture}[scale=0.5]
 			\foreach \n in {2,...,17} {
                 \tikzmath{\j=int(\n-1);}
 			    \node[input] (\n) at (\n,6) {$x_{\j}$};
@@ -1166,42 +1190,107 @@ See Figure~\ref{figure:shifting} for an~example.
 
 
 \section{Implementation and Experimental Evaluation}
-We~implemented efficient generators of~our new circuits in~the \texttt{Cirbo} framework~\cite{DBLP:journals/corr/abs-2412-14933}. The framework allows one
-to~perform various operations with Boolean circuits such as~drawing, simplifying,
-and checking for satisfiability.
-Listing~\ref{listing:first} shows
-that how to~generate an~efficient circuit computing $\SUM_{31}$ in~just two lines of~code.
+We~implemented efficient generators of~our new circuits in~the \texttt{Cirbo} framework~\cite{DBLP:journals/corr/abs-2412-14933}. 
+To~generate a~circuit computing $\BA_n^s$, one passes the vector~$s$. Listing~\ref{listing:first} shows how to~use the generator
+to~produce an~efficient circuit computing $\SUM_{31}$ in~a~single line of~code.
+When the circuit is~generated, one can use a~wide range of~\texttt{Cirbo} methods to~analyze and manipulate the circuit.
 
 \begin{listing}
-	\caption{TBW}
+	\caption{Generating an~efficient circuit for $\SUM_{31}$ (that computes the binary representation of~the sum of~$31$ bits). The code also prints the size 
+		of~the resulting circuit and draws~it.}
 	\label{listing:first}
 	\begin{lstlisting}
-from cirbo.core.circuit import Circuit
-from cirbo.synthesis.generation.arithmetics.summation import add_sum_n_bits
+from cirbo.synthesis.generation.arithmetics.summation import generate_add_weighted_bits_efficient
 
-ckt = Circuit.bare_circuit(input_size=31)
-add_sum_n_bits(ckt, ckt.inputs)
-ckt.save_to_file('sum31.bench')
+ckt = generate_add_weighted_bits_efficient([0] * 31)
+print(ckt.gates_number())
+ckt.view_graph()
 	\end{lstlisting}
 \end{listing}
 
-\begin{table}
+\subsection{Adding Bits and Integers}
+Table~\ref{table:first} compares the size of~circuits for $\SUM_n$
+composed out~of Full Adders with circuits composed out~of MDFA blocks
+(that can be~generated using our new method), for various~$n$. As~the table reveals,
+for large values of~$n$, the latter circuits are about $10\%$ smaller than the former ones. Also, Listing~\ref{listing:first} ensures that for the addition of~two $n$-bit integers the generator produces circuits of~size $5n-3$ (recall that $\ADD_n=\BA_{2n}^{0,\dotsc,n-1,0,\dotsc,n-1}$ and that $5n-3$ is~provably optimal circuit size for this function).
+
+\begin{table*}
 	\begin{center}
-		\small
-		\begin{tabular}{lrrrrrrrrrr}
+		%\small
+		\begin{tabular}{lrrrrrrrrrrrrrrrrr}
 			\toprule
-			$n$ & 15 & 31 & 63 & 127 & 255 & 511 & 1023 & 2047 \\
+			$n$ & 7 & 15 & 31 & 63 & 127 & 255 & 511 & 1023 & 2047 & 4095 & 8191 & 16383 & 32767 & 65535 & 131071 \\
 			\midrule
-			FA & 55 & 130 & 285 & 600 & 1235 & 2510 & 5065 & 10180 \\
-			MDFA & 51 & 119 & 259 & 543 & 1115 & 2263 & 4563 & 9167 \\
-			& 5.0\%  & 8.5\%  & 9.1\%  & 9.5\%  & 9.7\%  & 9.8\%  & 9.9\%  & 10.0\% \\
+			FA & 20 & 55 & 130 & 285 & 600 & 1235 & 2510 & 5065 & 10180 & 20415 & 40890 & 81845 & 163760 & 327595 & 655270 \\
+			MDFA & 19 & 51 & 119 & 259 & 543 & 1115 & 2263 & 4563 & 9167 & 18379 & 36807 & 73667 & 147391 & 294843 & 589751 \\
+			Improvement  & 5.0\%  & 7.3\%  & 8.5\%  & 9.1\%  & 9.5\%  & 9.7\%  & 9.8\%  & 9.9\%  & 10.0\%  & 10.0\%  & 10.0\%  & 10.0\%  & 10.0\%  & 10.0\%  & 10.0\% \\ 
 			\bottomrule
 		\end{tabular}
 	\end{center}
 	\caption{Comparing the size of~circuits for $\SUM_n$ composed out of~Full Adders with
 	circuits composed out of~MDFA. The bottom row shows the improvement in~percents.}
 	\label{table:first}
-\end{table}
+\end{table*}
+
+\begin{listing}
+	\caption{Ensuring that the generator produces circuits of~size $5n-3$ for $\ADD_n$.}
+	\label{listing:add}
+	\begin{lstlisting}
+from cirbo.synthesis.generation.arithmetics.summation import generate_add_weighted_bits_efficient as generate
+
+for n in range(2, 100):
+    ckt = generate(list(range(n)) + list(range(n)))
+    assert ckt.gates_number() == 5 * n - 3
+	\end{lstlisting}
+\end{listing}
+
+\subsection{Multiplying Integers}
+
+Dadda's multiplier is~one of~the first circuit designs for multiplying $n$-bits integers. Basically, it~adds the partial products (conjunctions of~the bits of~the
+two input numbers) using Full Adders and Half Adders. Its size is~about $n^2+5n^2=6n^2$. Our method of~summing~up bits allows to~reduce the size 
+to~roughly $5.5n^2$. An~asymptotically faster method of~multiplying 
+$n$-bit integers was discovered by~Karatsuba~\cite{karatsuba}. It~is based 
+on~the divide-and-conquer approach: to~multiply two $n$-bit integers,
+it~makes three recursive calls to~multiply two $n/2$-bit integers and
+then combines them using summation and subtractions only. This way, the running 
+time~$T(n)$ of~the algorithm satisfies a~recurrence $T(n) \le 3T(n/2)+O(n)$,
+hence $T(n)=O(n^{\log_23})$. As~with many other algorithms based on~divide-and-conquer, when $n$~becomes small, it~is beneficial to~multiply
+the given numbers directly (rather than by~making recursive calls). 
+We~implemented generators based on~Karatsuba algorithm that 
+use Dadda multipliers and MDFA-based bit addition when $n$~is smaller than~$20$.
+Table~\ref{table:multiplication} and Figure~\ref{figure:multiplication}
+compare the size of~the corresponding five circuit designs for $40 \le n \le 300$.
+
+\begin{table*}
+	\begin{center}
+		\small
+		\begin{tabular}{lrrrrrrrrrrrrrrrr}
+\toprule
+$n$ & 40 & 60 & 80 & 100 & 120 & 140 & 160 & 180 & 200 & 220 & 240 & 260 & 280 & 300 \\
+\midrule
+Dadda & 9280 & 21120 & 37760 & 59200 & 85440 & 116480 & 152320 & 192960 & 238400 & 288640 & 343680 & 403520 & 468160 & 537600 \\
+MDFA & 8559 & 19439 & 34719 & 54399 & 78479 & 106959 & 139839 & 177119 & 218799 & 264879 & 315359 & 370239 & 429519 & 493199 \\
+Karatsuba & 11789 & 22982 & 37836 & 54173 & 72209 & 95319 & 118152 & 141653 & 168200 & 197328 & 223093 & 254123 & 293405 & 332314 \\
+Karatsuba, Dadda& 7522 & 15312 & 24770 & 36244 & 49200 & 64046 & 78598 & 95784 & 113870 & 133678 & 153948 & 176246 & 199102 & 223098 \\
+Karatsuba, MDFA& 7198 & 14489 & 23771 & 34556 & 46690 & 61140 & 75556 & 91749 & 108760 & 127358 & 146349 & 168198 & 190427 & 213175 \\
+\bottomrule
+		\end{tabular}
+	\end{center}
+	\caption{Comparing the size of~circuits for $\MULT_n$. The first multiplier, Dadda, computes the sum of~the partial product using Full Adders and Half Adders. The second one, MDFA, sums~up the partial products using MDFA blocks.
+	The third one, Karatsuba, makes three recursive calls and recurses all the way down to~4-bit numbers. The last two multipliers use Karatsuba algorithm, but switch to~Dadda or~MDFA multipliers when $n$~becomes smaller than~$20$.}
+	\label{table:multiplication}
+\end{table*}
+
+\begin{figure}
+	\begin{center}
+		\includegraphics[width=\linewidth]{images/plot40_100_10}\\[2mm]
+		\includegraphics[width=\linewidth]{images/plot100_300_10}
+	\end{center}
+	\caption{Comparing the size of~five circuit designs for $\MULT_n$, for $40 \le n \le 100$ (top) and $100 \le n \le 300$ (bottom).}
+	\label{figure:multiplication}
+\end{figure}
+
+
 
 
 \section{Conclusion and Further Directions}
