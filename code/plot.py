@@ -33,7 +33,7 @@ sys.setrecursionlimit(150000)
 
 
 # r = list(range(40, 101, 10))
-r = list(range(100, 301, 10))
+r = list(range(40, 301, 10))
 dadda_sizes = []
 mdfa_sizes = []
 karatsuba_sizes = []
@@ -109,6 +109,7 @@ plt.plot(r, karatsuba_mdfa_sizes, marker='.', linestyle='--', color='m', label='
 
 
 plt.grid(True, linestyle='--', alpha=0.7)
+# plt.legend(prop={'size': 20})
 plt.legend()
 plt.tight_layout()
 plt.show()

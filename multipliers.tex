@@ -22,6 +22,8 @@
 \DeclareMathOperator{\MULT}{MULT}
 \DeclareMathOperator{\BA}{BA}
 \DeclareMathOperator{\MDFA}{MDFA}
+\DeclareMathOperator{\INC}{INC}
+\DeclareMathOperator{\size}{size}
 
 \usepackage{newfloat}
 \usepackage{listings}
@@ -78,7 +80,7 @@
     of~$n$~bits or~multiplying two $n$-bit integers),
     this leads to~$10\%$ improvement.
 
-    We~complement our theoretical result by~an~open source implementation
+    We~complement our theoretical result by~an~open-source implementation
     of~generators producing circuits for bit addition and multiplication.
     The generators allow one to~produce the corresponding circuits
     in~two lines of~code and to~compare them to~existing designs.
@@ -728,6 +730,7 @@ In~this section, we~prove a~new upper bound $4.5-2m$ for the circuit size
 of~bit addition. For regimes where $m$~is small compared to~$n$, this~is
 better than $5n-3m$ by~about $10\%$. This applies to~$\MULT_n$ and $\SUM_n$.
 \begin{theorem}
+	\label{theorem:main}
     For any vector $s \in \mathbb{Z}_{\ge 0}^n$,
     \[\operatorname{size}(\BA_n^s) \le 4.5n-2m.\]
 \end{theorem}
@@ -792,6 +795,9 @@ See Figure~\ref{figure:shifting} for an~example.
     non-degenerate case where $m \le n$. To~prove the induction step,
     denote by~$l$ the number of~bits on~the least significance layer and consider the following seven cases. (In~fact, the first three cases are special cases of~the last three cases, but we~believe that the presentation is~cleaner when they are stated
     as~separate cases.)
+    In~each of~the seven cases below, we~shift and proceed by~induction.
+    It~is not difficult to~see that we~always get a~non-degenerate significance
+    vector (where $m \le n$). 
 
     \begin{enumerate}
         \item $l=1$. In~this case, we~just shift.
@@ -1188,9 +1194,91 @@ See Figure~\ref{figure:shifting} for an~example.
 \end{proof}
 
 
+\section{Lower Bounds and Limitations}
+The upper bound $\size(\BA_n^s) \le 5n-3m$ holds for any vector~$s$, but 
+in~many scenarios it~is loose. For example, for the function
+\[\ADD_n=\BA_{2n}^{0,\dotsc,n-1,0,\dotsc,n-1},\]
+this upper bounds turns into $5\cdot 2n-3(n+1)=7n-3$,
+whereas $\size(\ADD_n)=5n-3$. Interestingly, the term $3m$ in~the upper bound $5n-3m$ cannot be~increased: for any constant $\alpha > 3$, there exists 
+a~vector~$s$ such that $\size(\BA_n^s) \ge 5n-\alpha m-O(1)$. 
+One example of~such a~vector is~$s=(0,0,1,\dotsc,n-1)$. The corresponding function $\BA_n^s$ adds a~bit to an~$n$-bit number. It~is not difficult to~see that it~can be~computed using $n$~Half Adders (see Figure~\ref{figure:addingbit}), hence its circuit size is~at~most~$2n$. Below, we~show that this straightforward circuit is~optimal (up~to an~additive constant). It~also shows that it~is
+impossible to~improve our upper bound $4.5n-2m$ to $4.5n-\beta m$ for $\beta > 2.5$.
+
+\begin{figure}
+	\begin{center}
+		\begin{tikzpicture}
+			%\draw[help lines] (0, 0) grid (6, 4);
+			\foreach \i in {0, ..., 6} {
+				\node[input] (x\i) at (\i, 3) {$x_{\i}$};
+				\node[gate] (and\i) at (\i, 2.25) {$\land$};
+				\node[gate] (xor\i) at (\i, 1.5) {$\oplus$};
+				\node[input] (y\i) at (\i, 0.74) {$y_{\i}$};
+				\draw[->] (xor\i) -- (y\i);
+				\draw[->] (x\i) -- (and\i);
+				\path (x\i) edge[->, draw, bend right] (xor\i);
+			}
+			\foreach \i in {0,...,5} {
+				\tikzmath{\j=int(\i+1);}
+				\draw[->] (and\i) -- (and\j);
+				\draw[->] (and\i) -- (xor\j);
+			}
+			
+			\node[input] (t) at (-0.75, 2.25) {$t$};
+			\node[input] (y7) at (6.75, 2.25) {$y_7$};
+			\draw[->] (t) -- (and0);
+			\draw[->] (and6) -- (y7);
+		\end{tikzpicture}
+	\end{center}
+	\caption{One can add a~bit~$t$ to a~$7$-bit integer $x_0\dotsb x_7$ (to~get 
+		an~$8$-bit integer $y_0\dotsb y_7$) using $14$~gates. A~straightforward 
+		generalization of~this construction ensures that $\size(\BA_n^{0,0,1,\dotsc, n-1}) \le 2n$.}
+	\label{figure:addingbit}
+\end{figure}
+
+\begin{theorem}
+	\label{theorem:lowerbound}
+	\[\size(\BA_n^{0,0,1,\dotsc,n-1}) \ge 2n-O(1).\]
+\end{theorem}
+\begin{proof}
+	Assume that a~bit to~be added is~equal to~one (clearly, this only makes the function easier to~compute). In~other words,
+	we~consider the \emph{increment} function $\INC_n \colon \{0,1\}^n \to \{0,1\}^{n+1}$. Thus, $\INC_n(x_0, \dotsc, x_{n-1})=(y_0, \dotsc, y_n)$ such that
+	\[1+\sum_{i=0}^{n-1}2^ix_i=\sum_{i=0}^n2^iy_i.\]
+	It~is not difficult to~write down explicit formulas for all output bits of~$\INC_n$. For example, for $n=5$, they are expressed as~follows:
+	\begin{align*}
+		y_0 &= 1 \oplus x_0\\
+		y_1 &= x_0 \oplus x_1\\
+		y_2 &= x_0x_1 \oplus x_2\\
+		y_3 &= x_0x_1x_2 \oplus x_3\\
+		y_4 &= x_0x_1x_2x_3 \oplus x_4\\
+		y_5 &= x_0x_1x_2x_3x_4\\
+	\end{align*}
+	
+	
+	We~prove that $\size(\INC_n) \ge 2n-2$ by~induction on~$n$.
+	The base case $n=1$ is~clear. For the induction step, take an~optimal circuit computing $\INC_n$ and consider its (topologically) first gate~$A(x_i, x_j)$.
+	
+	Now, if~both the variables $x_i$~and~$x_j$ had out-degree one, the whole circuit would depend on~$x_i$ and~$x_j$ through the gate~$A$ only. This would mean that there are two different pairs of~constant $(a_i, a_j), (b_i, b_j) \in \{0,1\}^2$ such that $A(a_i, a_j)=A(b_i, b_j)$. This, in~turn, would mean that the circuit does not distinguish between assignments
+	\[x_i \gets a_i,\, x_j \gets a_j \,\text{ and }\, x_i \gets b_i,\, x_j \gets b_j.\]
+	But such a~circuit cannot compute the function $\INC_n$ as~$\INC_n$ clearly distinguishes all four different assignments to~$x_i$ and~$x_j$.
+	
+	Thus, assume that, say, $x_i$ feeds at~least two gates. Then, assign $x_i \gets 1$ and simplify the circuit. During the simplification, the gates fed by~$x_i$ are eliminated. Also, the resulting circuit computes $\INC_{n-1}$ and hence, by~the induction hypothesis, contains at~least $2(n-1)-2=2n-4$ gates. Thus, the original circuit has size at~least $2+2n-4=2n-2$.
+	
+	To~see that the simplified circuit computes $\INC_{n-1}$, it~is instructive 
+	to~get back to~the previous toy example where $n=5$. Say, we assign $x_2 \gets 1$. Then, the outputs are simplified as~follows:
+	\begin{align*}
+		y_0 &= 1 \oplus x_0\\
+		y_1 &= x_0 \oplus x_1\\
+		y_2 &= x_0x_1 \oplus 1\\
+		y_3 &= x_0x_1 \oplus x_3\\
+		y_4 &= x_0x_1x_3 \oplus x_4\\
+		y_5 &= x_0x_1x_3x_4\\
+	\end{align*}
+	It~is now easy to~see that $(y_0,y_1,y_3,y_4,y_5)=\INC_4(x_0, x_1, x_3, x_4)$.
+\end{proof}
+
 
 \section{Implementation and Experimental Evaluation}
-We~implemented efficient generators of~our new circuits in~the \texttt{Cirbo} framework~\cite{DBLP:journals/corr/abs-2412-14933}. 
+We~implemented efficient generators of~our new circuits in~the \texttt{Cirbo} open-source framework~\cite{DBLP:conf/aaai/AverkovBEGKKKLL25}. 
 To~generate a~circuit computing $\BA_n^s$, one passes the vector~$s$. Listing~\ref{listing:first} shows how to~use the generator
 to~produce an~efficient circuit computing $\SUM_{31}$ in~a~single line of~code.
 When the circuit is~generated, one can use a~wide range of~\texttt{Cirbo} methods to~analyze and manipulate the circuit.
@@ -1273,44 +1361,82 @@ MDFA & 8559 & 19439 & 34719 & 54399 & 78479 & 106959 & 139839 & 177119 & 218799 
 Karatsuba & 11789 & 22982 & 37836 & 54173 & 72209 & 95319 & 118152 & 141653 & 168200 & 197328 & 223093 & 254123 & 293405 & 332314 \\
 Karatsuba, Dadda& 7522 & 15312 & 24770 & 36244 & 49200 & 64046 & 78598 & 95784 & 113870 & 133678 & 153948 & 176246 & 199102 & 223098 \\
 Karatsuba, MDFA& 7198 & 14489 & 23771 & 34556 & 46690 & 61140 & 75556 & 91749 & 108760 & 127358 & 146349 & 168198 & 190427 & 213175 \\
-\bottomrule
+Improvement  & 4.3\%  & 5.4\%  & 4.0\%  & 4.7\%  & 5.1\%  & 4.5\%  & 3.9\%  & 4.2\%  & 4.5\%  & 4.7\%  & 4.9\%  & 4.6\%  & 4.4\%  & 4.4\%\\ \bottomrule
 		\end{tabular}
 	\end{center}
-	\caption{Comparing the size of~circuits for $\MULT_n$. The first multiplier, Dadda, computes the sum of~the partial product using Full Adders and Half Adders. The second one, MDFA, sums~up the partial products using MDFA blocks.
-	The third one, Karatsuba, makes three recursive calls and recurses all the way down to~4-bit numbers. The last two multipliers use Karatsuba algorithm, but switch to~Dadda or~MDFA multipliers when $n$~becomes smaller than~$20$.}
+	\caption{Comparing the size of~circuits for $\MULT_n$. The first multiplier, Dadda, computes the sum of~the partial products using Full Adders and Half Adders. The second one, MDFA, sums~up the partial products using MDFA blocks.
+	The third one, Karatsuba, makes three recursive calls and recurses all the way down to~4-bit numbers. The fourth and fifth multipliers use Karatsuba algorithm, but switch to~Dadda or~MDFA multipliers when $n$~becomes smaller than~$20$. The last row shows size improvement of~the fifth multiplier over the fourth one.}
 	\label{table:multiplication}
 \end{table*}
 
-\begin{figure}
-	\begin{center}
-		\includegraphics[width=\linewidth]{images/plot40_100_10}\\[2mm]
-		\includegraphics[width=\linewidth]{images/plot100_300_10}
-	\end{center}
-	\caption{Comparing the size of~five circuit designs for $\MULT_n$, for $40 \le n \le 100$ (top) and $100 \le n \le 300$ (bottom).}
+%\begin{figure}
+%	\begin{center}
+%		\includegraphics[width=\linewidth]{images/plot40_100_10}\\[2mm]
+%		\includegraphics[width=\linewidth]{images/plot100_300_10}
+%	\end{center}
+%	\caption{Comparing the size of~five circuit designs for $\MULT_n$, for $40 \le n \le 100$ (top) and $100 \le n \le 300$ (bottom).}
+%	\label{figure:multiplication}
+%\end{figure}
+
+\begin{figure*}
+	\includegraphics[width=\linewidth]{images/plot40_300_10}
+	\caption{Comparing the size of~five circuit designs for $\MULT_n$, for $40 \le n \le 300$.}
 	\label{figure:multiplication}
-\end{figure}
+\end{figure*}
 
 
 
 
 \section{Conclusion and Further Directions}
-
 In this paper, we~presented smaller circuits for bit addition.
 In~many practically relevant scenarios, the described circuits
 are about 10\% smaller than the known circuits composed
 out~of Half Adders and Full Adders.
 Also, we~implemented generators that allow one
 to~produce the corresponding circuits using a~single line of~code
-via the \texttt{Cirbo} package~\cite{DBLP:journals/corr/abs-2412-14933}.
+via the \texttt{Cirbo} open-source package~\cite{DBLP:conf/aaai/AverkovBEGKKKLL25}.
 
-The next natural step would~be to~optimize the depth of~the presented circuits.
+\subsection{Better Size Upper Bounds}
+It~would be~interesting to~improve our upper bound $4.5n-2m$ to~$4.5n-2.5m$
+(note that improving the constant~$2$ to~something larger than $2.5$~is provably impossible due to~Theorem~\ref{theorem:lowerbound}).
+For some vectors~$s$, our new circuits (generated by~the method described in~the proof of~Theorem~\ref{theorem:main}) for $\BA_n^s$ have size close to~$4.5n-2m$, so their size is~larger than $4.5n-2.5m$. However, in~all such cases it~is not difficult to~adjust the method of~adding the bits so~that the size of~the resulting circuit is~at~most $4.5n-2.5m$. One such example is 
+\[s=\left(0,0,0,0,1,1,2,2,\dotsc,\frac{n-2}{2}, \frac{n-2}{2}\right).\]
+\begin{center}
+	\begin{tikzpicture}
+			\foreach \x [count=\n from 0] in {2, 1, ..., -6} {
+				\draw[l] (\x * \d, -1) -- (\x * \d, 0.75);
+				\node[below] at (\x * \d, -1) {$\n$};
+			}
+			
+			\foreach \x in {-6, ..., 2} {
+				\node[dot] at (\x * \d, - 2 * \d) {};
+				\node[dot] at (\x * \d, - \d) {};
+			}
+			\node[dot] at (2 * \d, 0) {};
+			\node[dot] at (2 * \d, \d) {};
+	\end{tikzpicture}
+\end{center}
+In~this case, our method first spends $n/2$ gates to~pair the bits and then applies $n/2$ MDFA' blocks. The size of~the resulting circuit is $n/2+6\cdot n/2=3.5n$. This matches the upper bound $4.5n-2m$, since $m=n/2$ in~this case. At~the same time, one
+can compute this function by~a~circuit of~size~??? as~follows: \todo{Misha, please write down}
+
+It~would also be~interesting to~improve our upper bound $4.5n-2m$ to~$\alpha n-O(m)$, for some $\alpha<4.5$. This seems to~be more challenging than just improving $2m$~to~$2.5m$ as~this would most probably require using new building blocks. 
+
+Finally, note also the upper bounds $5n-3m$ and $4.5n-2m$ hold for all vectors~$s$.
+It~would still be~interesting to~improve known upper and lower bounds for specific vectors. Perhaps, one of~the most interesting such functions is~$\SUM_n$ (here, $s=(0,0,\dotsc,0)$). For~it, we~known an~upper bound $4.5n$ (originally proved 
+by~Demenkov et al.~\cite{DBLP:journals/ipl/DemenkovKKY10}; also follows from our Theorem~\ref{theorem:main}) and a~lower bound $2.5n-O(1)$ due to~Stockmeyer~\cite{DBLP:journals/mst/Stockmeyer77}. 
+
+
+
+
+\subsection{Logarithmic Depth}
+It would also~be interesting to~optimize the depth of~the presented circuits.
 Whereas the depth of~our circuits is~linear,
 we~have been interested in~the circuit size mainly and
 have not tried to~optimize the depth. We~believe that it~should be~possible
 to~adjust our circuits to~make the depth logarithmic. It~would be~interesting
 to~analyze this formally and to~answer the following questions:
 \begin{enumerate}
-	\item Is~it possible to~compute $\BA_n^s$ in~depth $O(\log n)$, for any $s \in \mathbb{Z}_{\ge 0}^n$?
+	\item Is~it possible to~compute $\BA_n^s$ in~depth $O(\log n)$, for any~$s$?
 	\item How small can the constant hidden in~$O(\log n)$~be?
 	\item Is~it possible to~optimize both depth and size simultaneously?
 \end{enumerate}

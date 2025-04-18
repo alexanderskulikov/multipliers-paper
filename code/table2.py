@@ -43,6 +43,7 @@ for n in rng:
     print('&', ckt_simple_karatsuba.gates_number(), end=' ')
 print('\\\\')
 
+kd = []
 print('Karatsuba, Dadda', end='')
 for n in rng:
     input_labels_a = [f"a{i}" for i in range(n)]
@@ -53,9 +54,11 @@ for n in rng:
     for i in input_labels_b:
         ckt_dadda_karatsuba.add_gate(Gate(i, INPUT))
     res = add_dadda_karatsuba(ckt_dadda_karatsuba, input_labels_a, input_labels_b)
+    kd.append(ckt_dadda_karatsuba.gates_number())
     print('&', ckt_dadda_karatsuba.gates_number(), end=' ')
 print('\\\\')
 
+km = []
 print('Karatsuba, MDFA', end='')
 for n in rng:
     input_labels_a = [f"a{i}" for i in range(n)]
@@ -66,7 +69,14 @@ for n in rng:
     for i in input_labels_b:
         ckt_our_karatsuba.add_gate(Gate(i, INPUT))
     res = add_mul_our_karatsuba(ckt_our_karatsuba, input_labels_a, input_labels_b)
+    km.append(ckt_our_karatsuba.gates_number())
     print('&', ckt_our_karatsuba.gates_number(), end=' ')
+print('\\\\')
+
+print('Improvement ', end='')
+for k in range(len(kd)):
+    i = (kd[k] - km[k]) / kd[k] * 100
+    print(f' & {i:.1f}\\%', end=' ')
 print('\\\\')
 
 print('\\bottomrule')
