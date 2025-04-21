@@ -1253,7 +1253,6 @@ impossible to~improve our upper bound $4.5n-2m$ to $4.5n-\beta m$ for $\beta > 2
 		y_5 &= x_0x_1x_2x_3x_4\\
 	\end{align*}
 	
-	
 	We~prove that $\size(\INC_n) \ge 2n-2$ by~induction on~$n$.
 	The base case $n=1$ is~clear. For the induction step, take an~optimal circuit computing $\INC_n$ and consider its (topologically) first gate~$A(x_i, x_j)$.
 	
@@ -1261,9 +1260,8 @@ impossible to~improve our upper bound $4.5n-2m$ to $4.5n-\beta m$ for $\beta > 2
 	\[x_i \gets a_i,\, x_j \gets a_j \,\text{ and }\, x_i \gets b_i,\, x_j \gets b_j.\]
 	But such a~circuit cannot compute the function $\INC_n$ as~$\INC_n$ clearly distinguishes all four different assignments to~$x_i$ and~$x_j$.
 	
-	Thus, assume that, say, $x_i$ feeds at~least two gates. Then, assign $x_i \gets 1$ and simplify the circuit. During the simplification, the gates fed by~$x_i$ are eliminated. Also, the resulting circuit computes $\INC_{n-1}$ and hence, by~the induction hypothesis, contains at~least $2(n-1)-2=2n-4$ gates. Thus, the original circuit has size at~least $2+2n-4=2n-2$.
-	
-	To~see that the simplified circuit computes $\INC_{n-1}$, it~is instructive 
+	Thus, assume that, say, $x_i$ feeds at~least two gates. Then, assign $x_i \gets 1$ and simplify the circuit. During the simplification, the gates fed by~$x_i$ are eliminated. Also, the resulting circuit computes $\INC_{n-1}$. To~see this,
+	it~is instructive 
 	to~get back to~the previous toy example where $n=5$. Say, we assign $x_2 \gets 1$. Then, the outputs are simplified as~follows:
 	\begin{align*}
 		y_0 &= 1 \oplus x_0\\
@@ -1273,7 +1271,9 @@ impossible to~improve our upper bound $4.5n-2m$ to $4.5n-\beta m$ for $\beta > 2
 		y_4 &= x_0x_1x_3 \oplus x_4\\
 		y_5 &= x_0x_1x_3x_4\\
 	\end{align*}
-	It~is now easy to~see that $(y_0,y_1,y_3,y_4,y_5)=\INC_4(x_0, x_1, x_3, x_4)$.
+	Clearly, $(y_0,y_1,y_3,y_4,y_5)=\INC_4(x_0, x_1, x_3, x_4)$.
+	
+	By~the induction hypothesis, the simplified circuit contains at~least $2(n-1)-2=2n-4$ gates. Thus, the original circuit has size at~least $2+2n-4=2n-2$.
 \end{proof}
 
 
@@ -1421,7 +1421,7 @@ There are three natural open problems related to~the circuit size of~bit additio
 			\node[dot] at (2 * \d, \d) {};
 		\end{tikzpicture}
 	\end{center}
-	In~this case, our method first spends $n/2$ gates to~pair the bits and then applies $n/2$ MDFA' blocks. The size of~the resulting circuit is $n/2+6\cdot n/2=3.5n$. This matches the upper bound $4.5n-2m$. Thus, to~improve the bound $4.5n-2m$ to~$4.5n-\beta m$, for $\beta > 2$, one needs to~find a~smaller circuit for this particular vector~$s^*$.
+	In~this case, our method first spends $n/2$ gates to~pair the bits and then applies $n/2$ MDFA' blocks. The size of~the resulting circuit~is, up~to an~additive constant, $n/2+6\cdot n/2=3.5n$. This matches the upper bound $4.5n-2m$. Thus, to~improve the bound $4.5n-2m$ to~$4.5n-\beta m$, for $\beta > 2$, one needs to~find a~smaller circuit for this particular vector~$s^*$.
 	And vice versa, by~proving a~lower bound $\size(\BA_n^{s^*}) \ge 3.5n-O(1)$,
 	one would prove that $\alpha=2$.
 	
