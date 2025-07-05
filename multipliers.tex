@@ -15,7 +15,7 @@
 \tikzstyle{pair} = [rectangle, draw, dashed, inner sep=.7mm]
 \tikzmath{\d=0.4;} % distance between dots
 
-%\usepackage[textwidth=15mm]{todonotes}
+\usepackage[textwidth=15mm]{todonotes}
 
 \DeclareMathOperator{\SUM}{SUM}
 \DeclareMathOperator{\ADD}{ADD}
@@ -110,6 +110,8 @@ Three specific scenarios where it~is used frequently are listed below.
 		two input numbers) and then sum~up the resulting bits.
 \end{itemize}
 In~terms of~the dot-notation introduced by~Dadda~\cite{dadda}, the three scenarios discussed above are visualized as~shown in~Figure~\ref{figure:dot1}.
+
+\todo{A brief explanation of the dot notation should be included to enhance the self-contained nature of the paper}
 
 \begin{figure}%[ht]
 	\begin{center}
@@ -725,6 +727,8 @@ for~$\SUM_{16}$.
 	\label{figure:sum17mdfa}
 \end{figure}
 
+\todo[inline]{The MDFA' block is only described in the caption of Figure 8, if I am not mistaken. Since this block is later used in the proof of Theorem 3.1, part (4), its description should be included in the main text rather than solely in the figure caption.}
+
 \section{New Upper Bound for Circuit Size of~Bit Addition}
 In~this section, we~prove a~new upper bound $4.5n-2m$ for the circuit size
 of~bit addition. For regimes where $m$~is small compared to~$n$, this~is
@@ -738,6 +742,10 @@ better than $5n-3m$ by~about $10\%$. This applies to~$\MULT_n$ and $\SUM_n$.
 In~the proof, we~use the following straightforward observation:
 if~the significance vector~$s$ contains a~single zero (say, $s_1=0$), then computing $\BA^s_n$ is~the same as~computing $\BA^{s'}_{n-1}$, where $s'=(s_2-1,\dotsc, s_n-1)$. We~refer to~this operation as~\emph{shifting}.
 See Figure~\ref{figure:shifting} for an~example.
+
+\todo[inline]{In the description of the shifting operation (line 399 and Figure 9), the meaning of "$\BA^s_n$ is~the same as~computing $\BA^{s'}_{n-1}$" should be clarified. Does this mean that the binary representations coincide, except for the least significant bit that needs to be added? A detailed example is recommended to clarify this crucial point, as the shifting operation plays a significant role in the proof of the upper bound.}
+
+\todo[inline]{In the definition of the shift operation, the authors refer to the case where the significance vector s "contains a single zero." However, in the proof of Theorem 3.1, the term "least significance" is used instead of 0 (e.g., in line 420), while all figures label the least significant layer as 0. Thus, is it essential for the least significant weight to be 0, or is it not?}
 
 \begin{figure}
     \begin{center}
@@ -1278,6 +1286,8 @@ impossible to~improve our upper bound $4.5n-2m$ to $4.5n-\beta m$ for $\beta > 2
 
 
 \section{Implementation and Experimental Evaluation}
+\todo[inline]{In the evaluation section, the authors did not mention how the size of the generated circuits are measured. It is unclear is from synthesizing engine, or from layout results.}
+
 We~implemented efficient generators of~our new circuits in~the \texttt{Cirbo} open-source framework~\cite{DBLP:conf/aaai/AverkovBEGKKKLL25}. 
 To~generate a~circuit computing $\BA_n^s$, one passes the vector~$s$. Listing~\ref{listing:first} shows how to~use the generator
 to~produce an~efficient circuit computing $\SUM_{31}$ in~a~single line of~code.
@@ -1383,6 +1393,8 @@ Improvement  & 4.3\%  & 5.4\%  & 4.0\%  & 4.7\%  & 5.1\%  & 4.5\%  & 3.9\%  & 4.
 	\caption{Comparing the size of~five circuit designs for $\MULT_n$, for $40 \le n \le 300$.}
 	\label{figure:multiplication}
 \end{figure*}
+
+\todo[inline]{Additionally, Figure 11 is uninterpretable due to the complete absence of axis descriptions.}
 
 
 
