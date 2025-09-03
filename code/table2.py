@@ -10,7 +10,7 @@ from cirbo.synthesis.generation.arithmetics.multiplication import add_simple_kar
 from cirbo.synthesis.generation.arithmetics.summation \
 import add_sum_n_bits_easy, add_sum_n_bits, generate_add_weighted_bits_efficient, generate_add_weighted_bits_naive
 
-rng = [20 * k for k in range(2, 16)]
+rng = [20 * k for k in range(2, 16, 2)]
 
 print('\\toprule')
 print('$n$ &', ' & '.join(map(str, rng)), '\\\\')

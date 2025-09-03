@@ -2,7 +2,7 @@ from cirbo.core.circuit import Circuit
 from cirbo.synthesis.generation.arithmetics.summation import add_sum_n_bits, add_sum_n_bits_easy
 
 # rng = (7, 15, 31, 63, 127, 255, 511, 1023, 2047)
-rng = [2 ** k - 1 for k in range(3, 18)]
+rng = [2 ** k - 1 for k in range(3, 18, 2)]
 s1, s2 = [], []
 
 print('\\toprule')
