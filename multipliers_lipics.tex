@@ -399,7 +399,7 @@
     \begin{figure}[ht]
         \begin{center}
             \begin{tikzpicture}
-                \begin{scope}[scale=.9]
+                \begin{scope}[scale=1]
                     \begin{scope}[scale=1.2, yshift=10mm]
                         \begin{scope}[yshift=20mm]
                             \foreach \x [count=\n from 0] in {0} {
@@ -613,7 +613,7 @@
 
     \begin{figure}[!ht]
         \begin{center}
-            \begin{tikzpicture}[scale=.9]
+            \begin{tikzpicture}[scale=1]
                 \begin{scope}[scale=.7]
                     %\draw[help lines] (0,0) grid (10,6);
                     \draw (1,0) rectangle (3,2); \node at (2,1) {FA};
@@ -730,7 +730,7 @@
 
     \begin{figure}[!ht]
         \begin{center}
-            \begin{tikzpicture}[scale=0.7]
+            \begin{tikzpicture}[scale=0.8]
                 \foreach \n in {2,...,17} {
                     \tikzmath{\j=int(\n-1);}
                     \node[input] (\n) at (\n,6) {$x_{\j}$};
@@ -1375,11 +1375,11 @@ ckt.view_graph()
             %\small
             \begin{tabular}{lrrrrrrrrr}
                 \toprule
-                $n$ & 7 & 31 & 127 & 511 & 1023 & 2047 & 4095 & 8191 & 16383\\
+                $n$ & 7 & 31 & 127 & 511 & 2047 & 8191 & 32767 & 131071 \\
                 \midrule
-                FA & 20 & 130 & 600 & 2510 & 5065 & 10180 & 20415 & 40890 & 81845\\
-                MDFA & 19 & 119 & 543 & 2263 & 4563 & 9167 & 18379 & 36807 & 73667\\
-                Improvement  & 5.0\% & 8.5\% & 9.5\% & 9.8\%  & 9.9\%  & 10.0\%  & 10.0\%  & 10.0\%  & 10.0\%\\
+                FA & 20 & 130 & 600 & 2510 & 10180 & 40890 & 163760 & 655270 \\
+                MDFA & 19 & 119 & 543 & 2263 & 9167 & 36807 & 147391 & 589751 \\
+                Improvement  & 5.0\%  & 8.5\%  & 9.5\%  & 9.8\%  & 10.0\%  & 10.0\%  & 10.0\%  & 10.0\% \\
                 \bottomrule
             \end{tabular}
         \end{center}
@@ -1406,15 +1406,14 @@ for n in range(2, 100):
     $n$-bit integers was discovered by~Karatsuba~\cite{karatsuba}. It~is based
     on~the divide-and-conquer approach: to~multiply two $n$-bit integers,
     it~makes three recursive calls to~multiply two $n/2$-bit integers and
-    then combines them using summation and subtractions only. This way, the running
+    then combines them using summation and subtraction only. This way, the running
     time~$T(n)$ of~the algorithm satisfies a~recurrence $T(n) \le 3T(n/2)+O(n)$,
     hence $T(n)=O(n^{\log_23})$. As~with many other algorithms based on~divide-and-conquer, when $n$~becomes small, it~is beneficial to~multiply
-    the given numbers directly (rather than by~making recursive calls).
+    the given numbers directly (rather than recursively).
     We~implemented generators based on~Karatsuba algorithm that
     use Dadda multipliers and MDFA-based bit addition when $n$~is smaller than~$20$.
     Table~\ref{table:multiplication} and Figure~\ref{figure:multiplication}
     compare the size of~the corresponding five circuit designs for $40 \le n \le 300$.
-    \todo[inline]{Gosha, please adjust the table below. For this, leave only those that are divisible by 40: 40, 80, ..., 280. The table can be generated using code/table2.py file}
 
     \begin{table}[ht]
                 \caption{Comparing the size of~circuits for $\MULT_n$. The first multiplier, Dadda, computes the sum of~the partial products using Full Adders and Half Adders. The second one, MDFA, sums~up the partial products using MDFA blocks.
@@ -1424,32 +1423,42 @@ for n in range(2, 100):
             \small
             \begin{tabular}{lrrrrrrrrrrrrrrrr}
                 \toprule
-                $n$ & 40 & 60 & 80 & 100 & 120 & 140 & 160 & 180 & 200 & 220 & 240 & 260 & 280 & 300 \\
+                $n$ & 40 & 80 & 120 & 160 & 200 & 240 & 280 \\
                 \midrule
-                Dadda & 9280 & 21120 & 37760 & 59200 & 85440 & 116480 & 152320 & 192960 & 238400 & 288640 & 343680 & 403520 & 468160 & 537600 \\
-                MDFA & 8559 & 19439 & 34719 & 54399 & 78479 & 106959 & 139839 & 177119 & 218799 & 264879 & 315359 & 370239 & 429519 & 493199 \\
-                Karatsuba & 11789 & 22982 & 37836 & 54173 & 72209 & 95319 & 118152 & 141653 & 168200 & 197328 & 223093 & 254123 & 293405 & 332314 \\
-                Karatsuba, Dadda& 7522 & 15312 & 24770 & 36244 & 49200 & 64046 & 78598 & 95784 & 113870 & 133678 & 153948 & 176246 & 199102 & 223098 \\
-                Karatsuba, MDFA& 7198 & 14489 & 23771 & 34556 & 46690 & 61140 & 75556 & 91749 & 108760 & 127358 & 146349 & 168198 & 190427 & 213175 \\
-                Improvement  & 4.3\%  & 5.4\%  & 4.0\%  & 4.7\%  & 5.1\%  & 4.5\%  & 3.9\%  & 4.2\%  & 4.5\%  & 4.7\%  & 4.9\%  & 4.6\%  & 4.4\%  & 4.4\%\\ \bottomrule
+                Dadda & 9280 & 37760 & 85440 & 152320 & 238400 & 343680 & 468160 \\
+                MDFA & 8559 & 34719 & 78479 & 139839 & 218799 & 315359 & 429519 \\
+                Karatsuba & 11789 & 37836 & 72209 & 118152 & 168200 & 223093 & 293405 \\
+                Karatsuba, Dadda& 7522 & 24770 & 49200 & 78598 & 113870 & 153948 & 199102 \\
+                Karatsuba, MDFA& 7198 & 23771 & 46690 & 75556 & 108760 & 146349 & 190427 \\
+                Improvement  & 4.3\%  & 4.0\%  & 5.1\%  & 3.9\%  & 4.5\%  & 4.9\%  & 4.4\% \\
+                \bottomrule
             \end{tabular}
         \end{center}
     \end{table}
-
-    %\begin{figure}
-    %	\begin{center}
-        %		\includegraphics[width=\linewidth]{images/plot40_100_10}\\[2mm]
-        %		\includegraphics[width=\linewidth]{images/plot100_300_10}
-        %	\end{center}
-    %	\caption{Comparing the size of~five circuit designs for $\MULT_n$, for $40 \le n \le 100$ (top) and $100 \le n \le 300$ (bottom).}
-    %	\label{figure:multiplication}
-    %\end{figure}
 
     \begin{figure}[ht]
         \includegraphics[width=\linewidth]{images/plot40_300_10}
         \caption{Comparing the size of~five circuit designs for $\MULT_n$, for $40 \le n \le 300$.}
         \label{figure:multiplication}
     \end{figure}
+
+    \subsection{Logarithmic Depth}
+    The depth of~most of~the circuits described above
+    is~linear, that~is, $\Theta(n)$.
+    With an~additional care, one can make the depth logarithmic ($\Theta(\log n)$) by~increasing the size slightly.
+    To~achieve this, one processes the layers in~parallel (rather than consecutively) while there~is a~layer that has more than two bits. Namely, if a~layer contains $3k+r$ bits (with $r \in \{0,1,2\}$), one applies $k$~Full Adders in~parallel. As~the number of~bits decreases geometrically, it~takes at~most $O(\log n)$ depth to~reach the case when there are at~most two bits on~every layer (the size is~still linear since each Full Adder reduces the total number of~bits). After this, everything boils down to~adding two $k$-bit numbers (with $k \le n$). This can
+    be~performed using the ...\todo{Gosha, please add the name of the adder and a reference} adder that has size $O(k)$ and depth $O(\log k)$. By~using MDFA's instead of~FA's, one can further reduce the size of~the resulting circuits. Table~\ref{table:log} shows the size and depth of the circuits generated this way for the three previously considered functions: $\SUM$, $\ADD$, and $\MULT$.
+    \todo[inline]{Gosha, what would be a good example here? For which functions and for which values of $n$, would we like to show the depth and size?}
+
+%    \begin{table}
+%        \caption{The size and the depth of~circuits computing $\SUM_n$, $\ADD_n$, and $\MULT_n$ for $n=200$.}
+%        \label{table:log}
+%        \begin{tabular}{lllll}
+%            \toprule
+%        \end{tabular}
+%    \end{table}
+
+
 
 
     \section{Conclusion and Further Directions}
@@ -1461,7 +1470,7 @@ for n in range(2, 100):
     to~produce the corresponding circuits using a~single line of~code
     via the \texttt{Cirbo} open-source package~\cite{DBLP:conf/aaai/AverkovBEGKKKLL25}.
 
-    \subsection{Better Size Upper Bounds}
+    %\subsection{Better Size Upper Bounds}
     There are three natural open problems related to~the circuit size of~bit addition.
     \begin{enumerate}
         \item What is the largest $\alpha$ such that
@@ -1496,24 +1505,24 @@ for n in range(2, 100):
         we~proved that $\gamma \le 4.5$.
         Improving this seems to~be more challenging than just improving $2m$~to~$2.5m$ as~this would most probably require using new building blocks.
 
-        \item Finally, note also the upper bounds $5n-3m$ and $4.5n-2m$ hold for \emph{all} vectors~$s$.
+        \item Finally, note also that the upper bounds $5n-3m$ and $4.5n-2m$ hold for \emph{all} vectors~$s$.
         It~would be~interesting to~improve known upper and lower bounds for \emph{specific} vectors. Perhaps, one of~the most interesting such functions is~$\SUM_n$ (here, $s=(0,0,\dotsc,0)$). For~it, we~known an~upper bound $4.5n$ (originally proved
         by~Demenkov et al.~\cite{DBLP:journals/ipl/DemenkovKKY10}; also follows from our Theorem~\ref{theorem:main}) and a~lower bound $2.5n-O(1)$ due to~Stockmeyer~\cite{DBLP:journals/mst/Stockmeyer77}.
     \end{enumerate}
 
 
-    \subsection{Logarithmic Depth}
-    It would also~be interesting to~optimize the depth of~the presented circuits.
-    Whereas the depth of~our circuits is~linear,
-    we~have been interested in~the circuit size mainly and
-    have not tried to~optimize the depth. We~believe that it~should be~possible
-    to~adjust our circuits to~make the depth logarithmic. It~would be~interesting
-    to~analyze this formally and to~answer the following questions:
-    \begin{enumerate}
-        \item Is~it possible to~compute $\BA_n^s$ in~depth $O(\log n)$, for any~$s$?
-        \item How small can the constant hidden in~$O(\log n)$~be?
-        \item Is~it possible to~optimize both depth and size simultaneously?
-    \end{enumerate}
+%    \subsection{Logarithmic Depth}
+%    It would also~be interesting to~optimize the depth of~the presented circuits.
+%    Whereas the depth of~our circuits is~linear,
+%    we~have been interested in~the circuit size mainly and
+%    have not tried to~optimize the depth. We~believe that it~should be~possible
+%    to~adjust our circuits to~make the depth logarithmic. It~would be~interesting
+%    to~analyze this formally and to~answer the following questions:
+%    \begin{enumerate}
+%        \item Is~it possible to~compute $\BA_n^s$ in~depth $O(\log n)$, for any~$s$?
+%        \item How small can the constant hidden in~$O(\log n)$~be?
+%        \item Is~it possible to~optimize both depth and size simultaneously?
+%    \end{enumerate}
 
     \section*{Acknowledgments}
     We~thank the anonymous reviewers for many helpful comments.
