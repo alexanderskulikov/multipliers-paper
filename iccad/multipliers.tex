@@ -4,6 +4,7 @@
 \usetikzlibrary{math, fit}
 
 \usepackage{listings}
+\usepackage{multirow}
 
 \tikzstyle{dot}=[circle, fill=black, inner sep=0mm, minimum size=1mm]
 \tikzstyle{l}=[dotted, thin]
@@ -1397,6 +1398,26 @@ Improvement  & 4.3\%  & 5.4\%  & 4.0\%  & 4.7\%  & 5.1\%  & 4.5\%  & 3.9\%  & 4.
 \todo[inline]{Additionally, Figure 11 is uninterpretable due to the complete absence of axis descriptions.}
 
 
+\begin{table}
+    \begin{center}
+        \begin{tabular}{{lrrrl}}
+            \toprule
+            $n$ & 63 & 127 & 255 & \\ 
+            \midrule
+            \multirow{2}{*}{ADD}  & 28 & 32 & 37 & Depth \\
+                                & 310 & 610 & 1190 & Size \\
+            \midrule
+            \multirow{2}{*}{SUM}  & 21 & 25 & 29 & Depth \\
+                            & 470 & 976 & 1994 & Size \\
+            \midrule
+            \multirow{2}{*}{MULT} & 54 & 66 & 73 & Depth \\
+                            & 18439 & 73825 & 295197 & Size \\
+            \bottomrule
+        \end{tabular}
+    \end{center}
+    \caption{Presenting depth and size of logarithmic-depth circuits generated using MDFA blocks for various arithmetic functions.}
+    \label{table:log_mdfa}
+\end{table}
 
 
 \section{Conclusion and Further Directions}
