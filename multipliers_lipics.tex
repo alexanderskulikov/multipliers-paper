@@ -55,6 +55,7 @@
 \usepackage{tikz}
 \usetikzlibrary{math, fit}
 \usepackage{listings}
+\usepackage{multirow}
 
 
 \tikzstyle{dot} = [circle, fill=black, inner sep=0mm, minimum size=1mm]
@@ -1458,6 +1459,27 @@ for n in range(2, 100):
 %        \end{tabular}
 %    \end{table}
 
+	\begin{table}[!ht]
+		\begin{center}
+			\begin{tabular}{{lrrrl}}
+				\toprule
+				$n$ & 63 & 127 & 255 & \\ 
+				\midrule
+				\multirow{2}{*}{ADD}  & 28 & 32 & 37 & Depth \\
+				& 310 & 610 & 1190 & Size \\
+				\midrule
+				\multirow{2}{*}{SUM}  & 21 & 25 & 29 & Depth \\
+				& 470 & 976 & 1994 & Size \\
+				\midrule
+				\multirow{2}{*}{MULT} & 54 & 66 & 73 & Depth \\
+				& 18439 & 73825 & 295197 & Size \\
+				\bottomrule
+			\end{tabular}
+		\end{center}
+		\caption{Presenting depth and size of logarithmic-depth circuits generated using MDFA blocks for various arithmetic functions.}
+		\label{table:log_mdfa}
+	\end{table}
+
 
 
 
@@ -1510,23 +1532,8 @@ for n in range(2, 100):
         by~Demenkov et al.~\cite{DBLP:journals/ipl/DemenkovKKY10}; also follows from our Theorem~\ref{theorem:main}) and a~lower bound $2.5n-O(1)$ due to~Stockmeyer~\cite{DBLP:journals/mst/Stockmeyer77}.
     \end{enumerate}
 
-
-%    \subsection{Logarithmic Depth}
-%    It would also~be interesting to~optimize the depth of~the presented circuits.
-%    Whereas the depth of~our circuits is~linear,
-%    we~have been interested in~the circuit size mainly and
-%    have not tried to~optimize the depth. We~believe that it~should be~possible
-%    to~adjust our circuits to~make the depth logarithmic. It~would be~interesting
-%    to~analyze this formally and to~answer the following questions:
-%    \begin{enumerate}
-%        \item Is~it possible to~compute $\BA_n^s$ in~depth $O(\log n)$, for any~$s$?
-%        \item How small can the constant hidden in~$O(\log n)$~be?
-%        \item Is~it possible to~optimize both depth and size simultaneously?
-%    \end{enumerate}
-
     \section*{Acknowledgments}
     We~thank the anonymous reviewers for many helpful comments.
 
-    \bibliographystyle{plain}
     \bibliography{references}
 \end{document}
