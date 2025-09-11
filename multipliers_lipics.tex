@@ -1448,18 +1448,13 @@ for n in range(2, 100):
     is~linear, that~is, $\Theta(n)$.
     With an~additional care, one can make the depth logarithmic ($\Theta(\log n)$) by~increasing the size slightly.
     To~achieve this, one processes the layers in~parallel (rather than consecutively) while there~is a~layer that has more than two bits. Namely, if a~layer contains $3k+r$ bits (with $r \in \{0,1,2\}$), one applies $k$~Full Adders in~parallel. As~the number of~bits decreases geometrically, it~takes at~most $O(\log n)$ depth to~reach the case when there are at~most two bits on~every layer (the size is~still linear since each Full Adder reduces the total number of~bits). After this, everything boils down to~adding two $k$-bit numbers (with $k \le n$). This can
-    be~performed using the ...\todo{Gosha, please add the name of the adder and a reference} adder that has size $O(k)$ and depth $O(\log k)$. By~using MDFA's instead of~FA's, one can further reduce the size of~the resulting circuits. Table~\ref{table:log} shows the size and depth of the circuits generated this way for the three previously considered functions: $\SUM$, $\ADD$, and $\MULT$.
-    \todo[inline]{Gosha, what would be a good example here? For which functions and for which values of $n$, would we like to show the depth and size?}
+    be~performed using the ...\todo{TBA} adder that has size $O(k)$ and depth $O(\log k)$. By~using MDFA's instead of~FA's, one can further reduce the size of~the resulting circuits. Table~\ref{table:log} shows the size and depth of the circuits generated this way for the three previously considered functions: $\SUM$, $\ADD$, and $\MULT$.
 
-%    \begin{table}
-%        \caption{The size and the depth of~circuits computing $\SUM_n$, $\ADD_n$, and $\MULT_n$ for $n=200$.}
-%        \label{table:log}
-%        \begin{tabular}{lllll}
-%            \toprule
-%        \end{tabular}
-%    \end{table}
 
 	\begin{table}[!ht]
+		\caption{The size and the depth of~circuits computing $\SUM_n$, $\ADD_n$, and $\MULT_n$ for $n=200$.}
+%		\caption{Presenting depth and size of logarithmic-depth circuits generated using MDFA blocks for various arithmetic functions.}
+		\label{table:log}
 		\begin{center}
 			\begin{tabular}{{lrrrl}}
 				\toprule
@@ -1476,8 +1471,6 @@ for n in range(2, 100):
 				\bottomrule
 			\end{tabular}
 		\end{center}
-		\caption{Presenting depth and size of logarithmic-depth circuits generated using MDFA blocks for various arithmetic functions.}
-		\label{table:log_mdfa}
 	\end{table}
 
 
