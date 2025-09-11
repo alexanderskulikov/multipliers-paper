@@ -1,6 +1,6 @@
 all: 
-	latexmk -pdf multipliers
-	open multipliers.pdf
+	latexmk -pdf multipliers_lipics
+	open multipliers_lipics.pdf
 
 clean:
 	latexmk -pdf -c
