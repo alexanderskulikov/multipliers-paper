@@ -612,7 +612,7 @@
     of~an~optimal circuit of~size~$11$ computing~$\SUM_5$ shown on~the right
     of~Figure~\ref{figure:mdfa}.
 
-    \begin{figure}[!ht]
+    \begin{figure}[ht]
         \begin{center}
             \begin{tikzpicture}[scale=1]
                 \begin{scope}[scale=.7]
@@ -729,7 +729,7 @@
     Figure~\ref{figure:sum17mdfa} gives an~example of~the corresponding design
     for~$\SUM_{16}$.
 
-    \begin{figure}[!ht]
+    \begin{figure}[ht]
         \begin{center}
             \begin{tikzpicture}[scale=0.8]
                 \foreach \n in {2,...,17} {
@@ -1373,7 +1373,6 @@ ckt.view_graph()
             circuits composed out of~MDFA. The bottom row shows the improvement in~percents.}
         \label{table:first}
         \begin{center}
-            %\small
             \begin{tabular}{lrrrrrrrrr}
                 \toprule
                 $n$ & 7 & 31 & 127 & 511 & 2047 & 8191 & 32767 & 131071 \\
@@ -1417,11 +1416,10 @@ for n in range(2, 100):
     compare the size of~the corresponding five circuit designs for $40 \le n \le 300$.
 
     \begin{table}[ht]
-                \caption{Comparing the size of~circuits for $\MULT_n$. The first multiplier, Dadda, computes the sum of~the partial products using Full Adders and Half Adders. The second one, MDFA, sums~up the partial products using MDFA blocks.
-            The third one, Karatsuba, makes three recursive calls and recurses all the way down to~4-bit numbers. The fourth and fifth multipliers use Karatsuba algorithm, but switch to~Dadda or~MDFA multipliers when $n$~becomes smaller than~$20$. The last row shows size improvement of~the fifth multiplier over the fourth one.}
+        \caption{Comparing the size of~circuits for $\MULT_n$. The first multiplier, Dadda, computes the sum of~the partial products using Full Adders and Half Adders. The second one, MDFA, sums~up the partial products using MDFA blocks.
+        The third one, Karatsuba, makes three recursive calls and recurses all the way down to~4-bit numbers. The fourth and fifth multipliers use Karatsuba algorithm, but switch to~Dadda or~MDFA multipliers when $n$~becomes smaller than~$20$. The last row shows size improvement of~the fifth multiplier over the fourth one.}
         \label{table:multiplication}
         \begin{center}
-            \small
             \begin{tabular}{lrrrrrrrrrrrrrrrr}
                 \toprule
                 $n$ & 40 & 80 & 120 & 160 & 200 & 240 & 280 \\
@@ -1447,27 +1445,32 @@ for n in range(2, 100):
     The depth of~most of~the circuits described above
     is~linear, that~is, $\Theta(n)$.
     With an~additional care, one can make the depth logarithmic ($\Theta(\log n)$) by~increasing the size slightly.
-    To~achieve this, one processes the layers in~parallel (rather than consecutively) while there~is a~layer that has more than two bits. Namely, if a~layer contains $3k+r$ bits (with $r \in \{0,1,2\}$), one applies $k$~Full Adders in~parallel. As~the number of~bits decreases geometrically, it~takes at~most $O(\log n)$ depth to~reach the case when there are at~most two bits on~every layer (the size is~still linear since each Full Adder reduces the total number of~bits). After this, everything boils down to~adding two $k$-bit numbers (with $k \le n$). This can
-    be~performed using the ...\todo{TBA} adder that has size $O(k)$ and depth $O(\log k)$. By~using MDFA's instead of~FA's, one can further reduce the size of~the resulting circuits. Table~\ref{table:log} shows the size and depth of the circuits generated this way for the three previously considered functions: $\SUM$, $\ADD$, and $\MULT$.
+    To~achieve this, one processes the layers in~parallel rather than consecutively.
+    Namely, let $h$~be the maximum height of~a~significance layer (that~is, every layer contains at~most $h$~bits). While $h > 3$, apply in~parallel as~many
+    FA's as~possible to~every layer. After one such step, the maximum height becomes at~most $2h/3$ (to~simplify the exposition, we~ignore constant additive terms here): indeed, if~there are $k \le h$ bits on~the current layer, then about $k/3 \le h/3$ bits remain after the application of FA's; also, at~most $h/3$ bits are transferred from the next layer. Since the maximum height decreases geometrically, in~at most $O(\log n)$ steps, one reaches the case when $h \le 3$.
+    This takes depth $O(\log n)$ and size $O(n)$ (since each FA reduces the total number of~bits by~one). When $h \le 3$, apply either HA~or~FA to~every layer. This ensures that every layer has at~most two bits, that~is, $h \le 2$ (the size of~the resulting circuit is~still linear and the depth is~still logarithmic). 
+    Then, everything boils down to~adding 
+    two $k$-bit numbers (with $k \le n$). This can
+    be~performed using, for example, 
+    the Brent--Kung adder~\cite{BrentKung1982} that has size $O(k)$ and depth $O(\log k)$. By~using MDFA's instead of~FA's, one can further reduce the size of~the resulting circuits. Table~\ref{table:log} shows the size and the depth of the circuits generated this way for the three previously considered functions: $\SUM$, $\ADD$, and $\MULT$.
 
-
-	\begin{table}[!ht]
-		\caption{The size and the depth of~circuits computing $\SUM_n$, $\ADD_n$, and $\MULT_n$ for $n=200$.}
-%		\caption{Presenting depth and size of logarithmic-depth circuits generated using MDFA blocks for various arithmetic functions.}
+	\todo[inline]{Gosha, please change the range of $n$ to $10, 20, 30, 40, 60, 80, 160, 320$. If it becomes too wide, remove either 10 or 320.}
+	\begin{table}[ht]
+		\caption{The size and the depth of~circuits computing $\SUM_n$, $\ADD_n$, and $\MULT_n$.}
 		\label{table:log}
 		\begin{center}
 			\begin{tabular}{{lrrrl}}
 				\toprule
 				$n$ & 63 & 127 & 255 & \\ 
 				\midrule
-				\multirow{2}{*}{ADD}  & 28 & 32 & 37 & Depth \\
-				& 310 & 610 & 1190 & Size \\
+				\multirow{2}{*}{ADD}  & 28 & 32 & 37 & depth \\
+				& 310 & 610 & 1190 & size \\
 				\midrule
-				\multirow{2}{*}{SUM}  & 21 & 25 & 29 & Depth \\
-				& 470 & 976 & 1994 & Size \\
+				\multirow{2}{*}{SUM}  & 21 & 25 & 29 & depth \\
+				& 470 & 976 & 1994 & size \\
 				\midrule
-				\multirow{2}{*}{MULT} & 54 & 66 & 73 & Depth \\
-				& 18439 & 73825 & 295197 & Size \\
+				\multirow{2}{*}{MULT} & 54 & 66 & 73 & depth \\
+				& 18439 & 73825 & 295197 & size \\
 				\bottomrule
 			\end{tabular}
 		\end{center}
