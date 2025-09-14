@@ -1462,26 +1462,26 @@ for n in range(2, 100):
     the Brent--Kung adder~\cite{BrentKung1982} that has size $O(k)$ and depth $O(\log k)$. By~using MDFA's instead of~FA's, one can further reduce the size of~the resulting circuits. Table~\ref{table:log} shows the size and the depth of the circuits generated this way for the three previously considered functions: $\SUM$, $\ADD$, and $\MULT$.
 
 	\todo[inline]{Gosha, please change the range of $n$ to $10, 20, 30, 40, 60, 80, 160, 320$. If it becomes too wide, remove either 10 or 320.}
-	\begin{table}[ht]
+	\begin{table*}[ht]
 		\caption{The size and the depth of~circuits computing $\SUM_n$, $\ADD_n$, and $\MULT_n$.}
 		\label{table:log}
 		\begin{center}
-			\begin{tabular}{{lrrrl}}
+			\begin{tabular}{{lrrrrrrrrl}}
 				\toprule
-				$n$ & 63 & 127 & 255 & \\ 
+				$n$ & 10 & 20 & 30 & 40 & 60 & 80 & 160 & 320 \\ 
 				\midrule
-				\multirow{2}{*}{ADD}  & 28 & 32 & 37 & depth \\
-				& 310 & 610 & 1190 & size \\
+				\multirow{2}{*}{ADD}  & 15 & 18	& 23 & 24 & 28 & 31 & 32 & 42 & depth \\
+				& 49 & 101 & 153 & 194 & 297 & 383 & 755 & 1526 & size \\
 				\midrule
-				\multirow{2}{*}{SUM}  & 21 & 25 & 29 & depth \\
-				& 470 & 976 & 1994 & size \\
+				\multirow{2}{*}{SUM}  & 10 & 14 & 16 & 18 & 20 & 22 & 26 & 30 & depth \\
+				& 64 & 141 & 215 & 298 & 452 & 615 & 1252 & 2529 & size \\
 				\midrule
-				\multirow{2}{*}{MULT} & 54 & 66 & 73 & depth \\
-				& 18439 & 73825 & 295197 & size \\
+				\multirow{2}{*}{MULT} & 28 & 38 & 45 & 50 & 54 & 61 & 69 & 80 & depth \\
+				& 527 & 1901 & 4309 & 7558 & 16756 & 29571 & 116788 & 464139 & size \\
 				\bottomrule
 			\end{tabular}
 		\end{center}
-	\end{table}
+	\end{table*}
 
 
 
