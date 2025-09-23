@@ -6,9 +6,9 @@ from cirbo.core import Gate
 from cirbo.core.circuit import Circuit, INPUT
 from cirbo.synthesis.generation.arithmetics import add_mul_karatsuba
 from cirbo.synthesis.generation.arithmetics.multiplication import add_simple_karatsuba, add_dadda_karatsuba, \
-    add_mul_our_karatsuba, add_mul_dadda
+    add_mul_karatsuba_with_efficient_sum, add_mul_dadda
 from cirbo.synthesis.generation.arithmetics.summation \
-import add_sum_n_bits_easy, add_sum_n_bits, generate_add_weighted_bits_efficient, generate_add_weighted_bits_naive
+import add_sum_n_bits_easy, add_sum_n_bits, generate_sum_weighted_bits_efficient, generate_sum_weighted_bits_naive
 
 rng = [20 * k for k in range(2, 16, 2)]
 
@@ -25,7 +25,7 @@ print('\\\\')
 
 print('MDFA ', end='')
 for n in rng:
-    ckt_mult_efficient = generate_add_weighted_bits_efficient([i + j for i in range(n) for j in range(n)])
+    ckt_mult_efficient = generate_sum_weighted_bits_efficient([i + j for i in range(n) for j in range(n)])
     print('&', ckt_mult_efficient.gates_number() + n ** 2, end=' ')
 print('\\\\')
 
@@ -68,7 +68,7 @@ for n in rng:
         ckt_our_karatsuba.add_gate(Gate(i, INPUT))
     for i in input_labels_b:
         ckt_our_karatsuba.add_gate(Gate(i, INPUT))
-    res = add_mul_our_karatsuba(ckt_our_karatsuba, input_labels_a, input_labels_b)
+    res = add_mul_karatsuba_with_efficient_sum(ckt_our_karatsuba, input_labels_a, input_labels_b)
     km.append(ckt_our_karatsuba.gates_number())
     print('&', ckt_our_karatsuba.gates_number(), end=' ')
 print('\\\\')
