@@ -1,4 +1,4 @@
-\documentclass[a4paper, UKenglish, cleveref, autoref,  thm-restate]{lipics-v2021}
+\documentclass[a4paper, UKenglish, cleveref, autoref]{lipics-v2021}
 %This is a template for producing LIPIcs articles.
 %See lipics-v2021-authors-guidelines.pdf for further information.
 %for A4 paper format use option "a4paper", for US-letter use option "letterpaper"
@@ -128,7 +128,7 @@
         in~two lines of~code and to~compare them to~existing designs.
     \end{abstract}
 
-    \clearpage
+    %\clearpage
 
     \section{Overview}
     Bit addition arises virtually everywhere in~digital circuits:
@@ -800,7 +800,7 @@
     the cost of~computing this particular bit of~the output is~zero,
     allowing one to~forget about~it. Thus,
     \[\operatorname{size}(\BA^s_n)=\operatorname{size}(\BA^{s'}_{n-1}),\]
-    where $s'=(s_2,\dotsc, s_n)$. We~call the operation 
+    where $s'=(s_2,\dotsc, s_n)$. We~call the operation
     of~replacing~$s$ by~$s'$
     as~\emph{shifting}. Note that shifting reduces both the number of~inputs and the number of~outputs by~one. Figure~\ref{figure:shifting} gives an~example.
 
@@ -824,7 +824,7 @@
 						\draw[l] (\x * \d, -1) -- (\x * \d, .5);
 						\node[below] at (\x * \d, -1) {$\n$};
 					}
-										
+
 					\foreach \x/\y in {-1/-1, -1/0}
 						\node[dot] at (\x * \d, \y * \d - \d) {};
 				\end{scope}
@@ -856,9 +856,9 @@
 
         Then, it~remains to~prove that one can compute the sum of~$n$ bits
         using $4n-2m$ gates if~every significance layer contains at~most one bit
-        without a~pair. We~prove this by~induction on~$n$. The base case $n=1$ is~clear: in~this case, the circuit size is~zero (nothing needs to~be summed~up) and the upper bound is~at~least zero since $m \le n$. 
+        without a~pair. We~prove this by~induction on~$n$. The base case $n=1$ is~clear: in~this case, the circuit size is~zero (nothing needs to~be summed~up) and the upper bound is~at~least zero since $m \le n$.
         To~prove the induction step,
-        denote by~$l$ the number 
+        denote by~$l$ the number
         of~minimum elements in~the significance vector~$s$
         (that~is, the number of~bits in~the rightmost non-empty column in~dot-notation).
 
@@ -1418,7 +1418,8 @@ for n in range(2, 100):
     We~implemented generators based on~Karatsuba algorithm that
     use Dadda multipliers and MDFA-based bit addition when $n$~is smaller than~$20$.
     Table~\ref{table:multiplication} and Figure~\ref{figure:multiplication}
-    compare the size of~the corresponding five circuit designs for $40 \le n \le 300$.
+    compare the size of~the corresponding five circuit designs for $40 \le n \le 300$. More accurate estimates on~the circuits size of~multipliers
+    are given by~Sergeev~\cite{Ser16}.
 
     \begin{table}[ht]
         \caption{Comparing the size of~circuits for $\MULT_n$. The first multiplier, Dadda, computes the sum of~the partial products using Full Adders and Half Adders. The second one, MDFA, sums~up the partial products using MDFA blocks.
