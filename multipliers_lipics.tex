@@ -113,14 +113,19 @@
         for various special cases of~it. A~vast majority of~these results are devoted to~optimizing the circuit \emph{depth} (also known as~delay).
 
         In~this paper, we~investigate the circuit \emph{size} (also known as~area)
-        over the full binary basis of~bit addition. Though most of~the known circuits are built from Half Adders and Full Adders,
-        we~show that, in~many interesting scenarios, these circuits have suboptimal size.
-        Namely, we~improve an~upper bound $5n-3m$ to~$4.5n-2m$,
+        over the full binary basis of~bit addition.
+        Most of~the known circuits are built from Half Adders and Full Adders
+        as~suggested by~Dadda in~1965 for designing multiplier circuits.
+        Applying these ideas to~the bit addition function, one gets a~$5n-3m$
+        upper bound on~its circuit size,
         where $n$~is the number of~input bits and $m$~is the number of~output bits.
-        In~the regimes where $m$~is small compared to~$n$
+        We~prove an~upper bound $4.5n-2m$. In~the regimes where $m$~is small compared to~$n$
         (for example, for computing the sum
         of~$n$~bits or~multiplying two $n$-bit integers),
-        this leads to~$10\%$ improvement.
+        this leads to~$10\%$ improvement. We~also show that it~is provably impossible
+        to~improve the two upper bounds above to~$5n-3.01m$ or~$4.5n-2.51m$.
+        We~achieve this by~establishing that the circuit size of~the increment function
+        (a~special case of~the bit addition function with $m=n+1$) is~equal to~$2n$.
 
         We~complement our theoretical result by~an~open-source implementation
         of~generators producing circuits for bit addition and multiplication.
@@ -340,6 +345,10 @@
     hence the total cost of~all Full Adders is~at~most $5(n-m)$. The Half Adder is~applied at~most once for each of~the significance layers, hence
     the total cost of~all Half Adders is~at~most~$2m$. Hence, the total size
     is~at~most $5(n-m)+2m=5n-3m$.
+    Note that
+    most of~the previous works consider specific special cases of~bit addition (like summation
+    or~multiplication) where $m$~is a~specific function on~$n$. In~such cases, the upper bounds
+    are stated in~terms of~$n$ only. The parameter~$m$ arises naturally when one considers the general bit addition function.
 
     By~applying this algorithm to~partial products of~bits of~two input $n$-bit numbers, one gets the well-known Dadda multiplier circuit~\cite{dadda}.
     For many vectors~$s$, the upper bound
@@ -470,6 +479,11 @@
     We~complement our theoretical result by~an~open source implementation
     of~generators producing circuits for bit addition and multiplication.
 
+    We~also show that it~is provably impossible
+    to~improve the two upper bounds above to~$5n-3.01m$ or~$4.5n-2.51m$.
+    We~achieve this by~establishing that the circuit size of~the increment function
+    (a~special case of~the bit addition function with $m=n+1$) is~equal to~$2n$.
+
     \section{General Setting}
     In~this section,
     we~formally introduce the Boolean functions
@@ -551,7 +565,7 @@
     nodes are labeled with input variables
     $x_1, \dotsc, x_n$ and constants $0$~and~$1$, whereas all other nodes
     are labeled with binary Boolean operations.
-    The inputs nodes are called input gates, all other nodes are called internal gates.
+    The source nodes are called input gates, all other nodes are called internal gates.
     Each gate computes
     a~(single-output) Boolean function of~$x_1, \dotsc, x_n$. If~$m$ gates of the
     circuit are marked as~outputs, it~computes a~function of~the form $\{0,1\}^n \to \{0,1\}^m$.
@@ -722,9 +736,10 @@
     \end{figure}
 
     We~also need a~block called MDFA' that can be~viewed as~a~subfunction of~MDFA:
-    \[\operatorname{MDFA'}(x_1 \oplus x_2, x_2, x_4, x_4 \oplus x_5)=\operatorname{MDFA}(x_1 \oplus x_2, x_2, 1, x_4, x_4 \oplus x_5).\]
-    It~is not difficult to~see that one can compute MDFA' using six gates: when one replaces $x_3$ by~one in~the circuit for MDFA,
+    \[\operatorname{MDFA'}(x_1 \oplus x_2, x_2, x_4, x_4 \oplus x_5)=\operatorname{MDFA}(x_1 \oplus x_2, x_2, 0, x_4, x_4 \oplus x_5).\]
+    It~is not difficult to~see that one can compute MDFA' using six gates: when one replaces $x_3$ by~zero in~the circuit for MDFA,
     the two gates fed by~$x_3$ can be~eliminated.
+    (If a~gate fed by~$x_3$ becomes a~negation of~its other input under an~assignment $x_3 \gets 0$, this negation is~incorporated into the Boolean binary operations computed by~the successors of~this gate.)
 
     Using MDFA and MDFA' blocks, one can compute $\SUM_n$ roughly as~follows:
     \begin{enumerate}
@@ -1124,9 +1139,11 @@
                 \end{tikzpicture}
             \end{center}
 
-            \item $l=4k+2$. Compute an~$\land$ of~two bits from the same pair:
-            this leaves their sum at~the current layer and puts the just computed
-            carry bit to~the next layer. If~needed, compute the parity of~an~unpaired
+            \item $l=4k+2$. For two bits $a$~and~$a \oplus b$ from the same pair,
+            compute the most significant bit of~their sum using a~single binary gate:
+            $a>(a \oplus b)=a \land b$.
+            This leaves their sum ($a \oplus b$) at~the current layer and puts the just computed
+            carry bit ($a \land b$) to~the next layer. If~needed, compute the parity of~an~unpaired
             bit with the just transferred carry bit. Then, apply MDFA $k$~times and shift.
             Overall, the upper bound~is
             \[1+1+8k+4(n-2k-1)-2(m-1)=4n-2m.\]
@@ -1293,12 +1310,13 @@
                 \node[input] (t) at (-0.75, 2.25) {$t$};
                 \node[input] (y7) at (6.75, 2.25) {$y_7$};
                 \draw[->] (t) -- (and0);
+                \draw[->] (t) -- (xor0);
                 \draw[->] (and6) -- (y7);
             \end{tikzpicture}
         \end{center}
-        \caption{One can add a~bit~$t$ to a~$7$-bit integer $x_0\dotsb x_7$ (to~get
+        \caption{One can add a~bit~$t$ to a~$7$-bit integer $x_0\dotsb x_6$ (to~get
             an~$8$-bit integer $y_0\dotsb y_7$) using $14$~gates. A~straightforward
-            generalization of~this construction ensures that $\size(\BA_n^{0,0,1,\dotsc, n-1}) \le 2n$.}
+            generalization of~this construction ensures that $\size(\BA_n^{0,0,1,\dotsc, n-2}) \le 2n-2$.}
         \label{figure:addingbit}
     \end{figure}
 
@@ -1371,7 +1389,8 @@ ckt.view_graph()
     Table~\ref{table:first} compares the size of~circuits for $\SUM_n$
     composed out~of Full Adders with circuits composed out~of MDFA blocks
     (that can be~generated using our new method), for various~$n$. As~the table reveals,
-    for large values of~$n$, the latter circuits are about $10\%$ smaller than the former ones. Also, Listing~\ref{listing:add} ensures that for the addition of~two $n$-bit integers the generator produces circuits of~size $5n-3$ (recall that $\ADD_n=\BA_{2n}^{0,\dotsc,n-1,0,\dotsc,n-1}$ and that $5n-3$ is~provably optimal circuit size for this function).
+    for large values of~$n$, the latter circuits are about $10\%$ smaller than the former ones. Also, Listing~\ref{listing:add} ensures that for the addition of~two $n$-bit integers the generator produces circuits of~size $5n-3$.
+    Recall that $\ADD_n=\BA_{2n}^{0,\dotsc,n-1,0,\dotsc,n-1}$ and that $5n-3$ is~provably optimal circuit size for this function as~shown by~Red'kin~\cite{Red81}.
 
     \begin{table}[ht]
         \caption{Comparing the size of~circuits for $\SUM_n$ composed out of~Full Adders with
@@ -1529,7 +1548,7 @@ for n in range(2, 100):
         Improving this seems to~be more challenging than just improving $2m$~to~$2.5m$ as~this would most probably require using new building blocks.
 
         \item Finally, note also that the upper bounds $5n-3m$ and $4.5n-2m$ hold for \emph{all} vectors~$s$.
-        It~would be~interesting to~improve known upper and lower bounds for \emph{specific} vectors. Perhaps, one of~the most interesting such functions is~$\SUM_n$ (here, $s=(0,0,\dotsc,0)$). For~it, we~known an~upper bound $4.5n$ (originally proved
+        It~would be~interesting to~improve known upper and lower bounds for \emph{specific} vectors. Perhaps, one of~the most interesting such functions is~$\SUM_n$ (here, $s=(0,0,\dotsc,0)$). For~it, we~know an~upper bound $4.5n$ (originally proved
         by~Demenkov et al.~\cite{DBLP:journals/ipl/DemenkovKKY10}; also follows from our Theorem~\ref{theorem:main}) and a~lower bound $2.5n-O(1)$ due to~Stockmeyer~\cite{DBLP:journals/mst/Stockmeyer77}.
     \end{enumerate}
 
