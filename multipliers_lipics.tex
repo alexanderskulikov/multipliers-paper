@@ -739,7 +739,7 @@
     \[\operatorname{MDFA'}(x_1 \oplus x_2, x_2, x_4, x_4 \oplus x_5)=\operatorname{MDFA}(x_1 \oplus x_2, x_2, 0, x_4, x_4 \oplus x_5).\]
     It~is not difficult to~see that one can compute MDFA' using six gates: when one replaces $x_3$ by~zero in~the circuit for MDFA,
     the two gates fed by~$x_3$ can be~eliminated.
-    (If a~gate fed by~$x_3$ becomes a~negation of~its other input under an~assignment $x_3 \gets 0$, this negation is~incorporated into the Boolean binary operations computed by~the successors of~this gate.)
+    (In~the same manner, HA is a~subfunction of~FA: $\operatorname{HA}(x_1,x_2)=\operatorname{FA}(x_1, x_2, 0)$.)
 
     Using MDFA and MDFA' blocks, one can compute $\SUM_n$ roughly as~follows:
     \begin{enumerate}
@@ -1345,7 +1345,9 @@
         \[x_i \gets a_i,\, x_j \gets a_j \,\text{ and }\, x_i \gets b_i,\, x_j \gets b_j.\]
         But such a~circuit cannot compute the function $\INC_n$ as~$\INC_n$ clearly distinguishes all four different assignments to~$x_i$ and~$x_j$.
 
-        Thus, assume that, say, $x_i$ feeds at~least two gates. Then, assign $x_i \gets 1$ and simplify the circuit. During the simplification, the gates fed by~$x_i$ are eliminated. Also, the resulting circuit computes $\INC_{n-1}$. To~see this,
+        Thus, assume that, say, $x_i$ feeds at~least two gates. Then, assign $x_i \gets 1$ and simplify the circuit. During the simplification, the gates fed by~$x_i$ are eliminated.
+        (If a~gate fed by~$x_i$ becomes a~negation of~its other input under an~assignment $x_i \gets 1$, this negation is~incorporated into the Boolean binary operations computed by~the successors of~this gate.)
+        Also, the resulting circuit computes $\INC_{n-1}$. To~see this,
         it~is instructive
         to~get back to~the previous toy example where $n=5$. Say, we assign $x_2 \gets 1$. Then, the outputs are simplified as~follows:
         \begin{align*}
